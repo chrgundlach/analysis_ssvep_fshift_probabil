@@ -7,16 +7,19 @@
 
 %% General Definitions 
 clearvars
-p.path=             'E:\work\data\SSVEP_FShift_Probabil\';
-p.bdf_path=         'E:\work\data\SSVEP_FShift_Probabil\eeg\raw\';
+% p.path=             'E:\work\data\SSVEP_FShift_Probabil\';
+% p.bdf_path=         'E:\work\data\SSVEP_FShift_Probabil\eeg\raw\';
+p.path=             'O:\AllgPsy\experimental_data\2023_FShift_Probabil\';
+p.bdf_path=         'O:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg\raw\';
 p.set_path=         [p.path 'eeg\set\'];
 p.epoch_path=       [p.path 'eeg\epoch\'];
 p.scads_path=       [p.path 'eeg\SCADS\'];
-p.chanlocs_path=    ['C:\Users\psy05cvd\Dropbox\work\matlab\Auswertungsskripte\Analyzer_G\ChanLocs\BioSemi64_1020.epf'];
+% p.chanlocs_path=    ['C:\Users\psy05cvd\Dropbox\work\matlab\Auswertungsskripte\Analyzer_G\ChanLocs\BioSemi64_1020.epf'];
+p.chanlocs_path=    ['C:\Users\EEG\Documents\MATLAB\lab_library\BS_Chanlocs\BioSemi64_1020.epf'];
 p.mean_path=        [p.path 'eeg\mean\'];
 p.subs=             cellfun(@(x) sprintf('%02.0f',x),num2cell(1:40),'UniformOutput', false)';
-p.subs2use=         [1 3:6 7 9 10 11 12];%  % participant 2,8 measurement cancelled due to bad behavior
-% p.subs2use=         [12];%
+% p.subs2use=         [1 3:6 7 9 10 11 12];%  % participant 2,8 measurement cancelled due to bad behavior
+p.subs2use=         [13];%
 p.part=             {'b';'c'};
 p.events=           {[10 11] [20 21] [30 31] [40 41] [50 51] [60 61]}; % trigger
 p.con1name =        'validity';
@@ -33,7 +36,7 @@ p.resample=         256;
 p.AnaScriptName=    'SSVEP_FShiftProbabil_preprocessing';
 
 % flags
-ImportFlag=         0; % set to 1 if files have ti be importet from raw .bdf files
+ImportFlag=         1; % set to 1 if files have ti be importet from raw .bdf files
 EpochFlag=          1; % set to 1 if data has to be epoched
 MeanFlag=           0; % set to 1 to create mean files with trials averaged for each subject
 TopoFlag=           0;

@@ -8,8 +8,8 @@ F.PathInBehavior        = fullfile(F.Pathlocal, 'behavior\raw\');
 F.PathInSCADS           = fullfile(F.Pathlocal, 'eeg\SCADS\');
 F.PathOut               = fullfile(F.Pathlocal, 'eeg\tfa\'); % with FWHM 0.5
 F.subjects              = arrayfun(@(x) sprintf('%02.0f',x),1:30,'UniformOutput',false)';
-F.sub2use               = [1 3 4 5 6 7 9 10 11 12];%:53;
-F.sub2use               = [3 4 5 6 7 9 10 11 12];%:53;
+F.sub2use               = [1 3 4 5 6 7 9 10 11 12 13];%:53;
+F.sub2use               = [13];%:53;
 
 F.trigger               = {[10] [20] [30] [40] [50] [60]}; % regular
 % F.trigger               = {[100];[200]};
