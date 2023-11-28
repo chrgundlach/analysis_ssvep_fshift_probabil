@@ -654,14 +654,26 @@ pl.data = squeeze(pl.tdata);
 pl.data_bc = 100.*(bsxfun(@rdivide, pl.data, mean(pl.data(pl.base_i(1):pl.base_i(2),:,:),1))-1);
 pl.data_ind_bc = 100.*(bsxfun(@rdivide, pl.data_ind, mean(pl.data_ind(pl.base_i(1):pl.base_i(2),:,:),1))-1);
 
+
+pl.data_bc = mean(pl.data_bc,5);
+pl.data = mean(pl.data,5);
+
+% baselince corrected (induced data)
+pl.data_bc = 100.*(bsxfun(@rdivide, pl.data_ind, mean(pl.data_ind(:,pl.base_i(1):pl.base_i(2),:,:,:),2))-1);
+pl.data_bc = mean(pl.data_bc,5);
+pl.data = mean(pl.data,5);
+% 
+% % baselince corrected with average induced data removed
+pl.data_bc = 100.*(bsxfun(@rdivide, pl.data, mean(pl.data(:,pl.base_i(1):pl.base_i(2),:,:,:),2))-1);
+pl.data_bc_ind = 100.*(bsxfun(@rdivide, pl.data_ind, mean(pl.data_ind(:,pl.base_i(1):pl.base_i(2),:,:,:),2))-1);
+pl.data_bc = bsxfun(@minus,pl.data_bc, mean(pl.data_bc_ind,[3 4 5]));
+pl.data_bc = mean(pl.data_bc,5);
+pl.data = mean(pl.data,5);
+
+
 % mean and sem data
 pl.mdata = mean(pl.data_bc,4);
 pl.semdata = std(pl.data_bc,1,4)./sqrt(numel(pl.sub2plot));
-
-
-
-
-
 
 % pl.mdata = mean(pl.data,4);
 % pl.semdata = std(pl.data,1,4)./sqrt(numel(pl.sub2plot));
