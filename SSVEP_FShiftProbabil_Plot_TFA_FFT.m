@@ -6,8 +6,8 @@ F.PathInEEG             = 'N:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg
 
 
 F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:40,'UniformOutput',false)';
-F.Subs2use              = [1 3 4 5 6 7 9 10 11 12]; %35
-                        
+F.Subs2use              = [1 3 4 5 6 7 9 10 11 12 13 14 15]; 
+                        % 2 and 8 are excluded as the didn't do the task properly, sub 11 has potentially low number of trials
 F.TFA.baseline          = [-500 -250];
 
 
@@ -247,8 +247,11 @@ for i_freq = 1:size(pl.data_ind,1)
 %     topoplot( t.pldata(:,i_freq), TFA.electrodes(1:64), ...
 %         'shading', 'interp', 'numcontour', 0, 'maplimits',[0 max(t.pldata(:))],'conv','on','colormap',fake_parula,...
 %         'whitebk','on');
+%     topoplot( pl.data_evo(i_freq,:), TFA.electrodes(1:64), ...
+%         'shading', 'interp', 'numcontour', 0, 'maplimits',[0 max(pl.data_evo,[],'all')],'conv','on','colormap',fake_parula,...
+%         'whitebk','on');
     topoplot( pl.data_evo(i_freq,:), TFA.electrodes(1:64), ...
-        'shading', 'interp', 'numcontour', 0, 'maplimits',[0 max(pl.data_evo,[],'all')],'conv','on','colormap',fake_parula,...
+        'shading', 'interp', 'numcontour', 0, 'maplimits',[0 max( pl.data_evo(i_freq,:),[],'all')],'conv','on','colormap',fake_parula,...
         'whitebk','on');
     title(sprintf('evoked %1.0fHz',F.stim_frequency(i_freq)))
     colorbar
@@ -564,7 +567,10 @@ pl.base = [-500 -250];
 pl.base_i = dsearchn( TFA.time', pl.base');
 pl.xlims=[-500 1750]; % index time 2 plot
 pl.xlims_i = dsearchn(TFA.time', pl.xlims');
-pl.concols = num2cell([255 133 4; 25 138 131; 255 194 64; 37 207 197]'./255,1);
+
+pl.conlabel = {'cued';'uncued';'neutral';'irr_cue';'irr_neutr'};
+% pl.concols = num2cell([255 133 4; 25 138 131; 255 194 64; 37 207 197]'./255,1);
+pl.concols = num2cell([25 138 130; 241 131 26; 41 60 74; 240 63 63; 255 120 120]'./255,1);
 
 
 % % standard cluster:
@@ -609,7 +615,8 @@ for i_sub = 1:numel(pl.sub2plot)
 end
 
 % collapse across RDKs and conditions to represent data like [cued, uncued, neutral] x [task relevant, task irrelevant]
-% induced evoked
+%#######
+% induced
 t.ridx = {'RDK1'; 'RDK2';'RDK1'};
 pl.tdata = [];
 for i_rdk = 1:numel(t.ridx)-1
@@ -621,14 +628,15 @@ for i_rdk = 1:numel(t.ridx)-1
     pl.tdata(i_rdk,:,3,:) = mean(pl.data_RDK_ind( i_rdk,:,t.idx,:),3);
 end
 % collapse across RDKs
-pl.tdata = mean(pl.data_RDK_ind,1);
+pl.tdata = mean(pl.tdata,1);
 
 % get third RDK and collapse for single attention cue or both color cue
 t.idx = ~strcmp(pl.con1label,'neutral');
-pl.tdata(:,:,4,:)=mean(pl.data_RDK_ind(3,:,t.idx,:),3);
-pl.tdata(:,:,5,:)=mean(pl.data_RDK_ind(3,:,~t.idx,:),3);
+pl.tdata(:,:,4,:)=mean(pl.data_RDK_ind(3,:,t.idx,:),3); % index single attended color
+pl.tdata(:,:,5,:)=mean(pl.data_RDK_ind(3,:,~t.idx,:),3); % index neutral
 pl.data_ind = squeeze(pl.tdata);
 
+%#######
 % evoked
 t.ridx = {'RDK1'; 'RDK2';'RDK1'};
 pl.tdata = [];
@@ -641,7 +649,7 @@ for i_rdk = 1:numel(t.ridx)-1
     pl.tdata(i_rdk,:,3,:) = mean(pl.data_RDK( i_rdk,:,t.idx,:),3);
 end
 % collapse across RDKs
-pl.tdata = mean(pl.data_RDK,1);
+pl.tdata = mean(pl.tdata,1);
 
 % get third RDK and collapse for single attention cue or both color cue
 t.idx = ~strcmp(pl.con1label,'neutral');
@@ -655,52 +663,53 @@ pl.data_bc = 100.*(bsxfun(@rdivide, pl.data, mean(pl.data(pl.base_i(1):pl.base_i
 pl.data_ind_bc = 100.*(bsxfun(@rdivide, pl.data_ind, mean(pl.data_ind(pl.base_i(1):pl.base_i(2),:,:),1))-1);
 
 % mean and sem data
-pl.mdata = mean(pl.data_bc,4);
-pl.semdata = std(pl.data_bc,1,4)./sqrt(numel(pl.sub2plot));
+pl.mdata = mean(pl.data,3);
+pl.semdata = std(pl.data,1,3)./sqrt(numel(pl.sub2plot));
+pl.mdata_bc = mean(pl.data_bc,3);
+pl.semdata_bc = std(pl.data_bc,1,3)./sqrt(numel(pl.sub2plot));
+pl.mdata_ind = mean(pl.data_ind,3);
+pl.semdata_ind = std(pl.data_ind,1,3)./sqrt(numel(pl.sub2plot));
+pl.mdata_ind_bc = mean(pl.data_ind_bc,3);
+pl.semdata_ind_bc = std(pl.data_ind_bc,1,3)./sqrt(numel(pl.sub2plot));
 
-
-
-
-
-
-% pl.mdata = mean(pl.data,4);
-% pl.semdata = std(pl.data,1,4)./sqrt(numel(pl.sub2plot));
 
 
 % plot data with line plots
+%  evoked raw
 pl.col = pl.concols;
 pl.col2 = [0.6 0.6 0.6];
-pl.line = {'-';'-';'-';'-'};
+pl.line = {'-';'-';'-';'-';'-'};
 figure;
 set(gcf,'Position',[100 100 700 400],'PaperPositionMode','auto')
 h.pl = {}; h.plsem=[];  h.plm = []; h.pls = []; h.plst = []; pl.con_label = [];
 t.idx = 1;
-for i_pos = 1:2
-    for i_con = 1:2
-        % data index
-        pl.idx = pl.xlims_i(1):pl.xlims_i(2);
-        
-        % plot SEM as boundary
-        % create data
-        pl.xconf = [TFA.time(pl.idx) TFA.time(pl.idx(end:-1:1))] ;
-        pl.yconf = [pl.mdata(i_pos, pl.idx,i_con)+pl.semdata(i_pos, pl.idx,i_con) ...
-            pl.mdata(i_pos, pl.idx(end:-1:1),i_con)-pl.semdata(i_pos, pl.idx(end:-1:1),i_con)];
-        % plot
-        h.plsem{t.idx} = fill(pl.xconf,pl.yconf,pl.col{t.idx}','EdgeColor','none','FaceAlpha',0.3);
-        hold on
-        
-        % plot mean lines
-        h.plm{t.idx}=plot(TFA.time(pl.idx), pl.mdata(i_pos,pl.idx,i_con),'Color',pl.col{t.idx},'LineStyle',pl.line{t.idx},'LineWidth',2);
-                
-        pl.con_label{t.idx} = sprintf('%s + %s', pl.lab_pos{i_pos}, pl.lab_con{i_con});
-        
-        t.idx = t.idx+1;
-    end
+
+for i_con = 1:size(pl.mdata,2)
+    % data index
+    pl.idx = pl.xlims_i(1):pl.xlims_i(2);
+
+    % plot SEM as boundary
+    % create data
+    pl.xconf = [TFA.time(pl.idx) TFA.time(pl.idx(end:-1:1))] ;
+    pl.yconf = [pl.mdata(pl.idx,i_con)'+pl.semdata(pl.idx,i_con)' ...
+        pl.mdata(pl.idx(end:-1:1),i_con)'-pl.semdata(pl.idx(end:-1:1),i_con)'];
+    % plot
+    h.plsem{t.idx} = fill(pl.xconf,pl.yconf,pl.col{t.idx}','EdgeColor','none','FaceAlpha',0.3);
+    hold on
+
+    % plot mean lines
+    h.plm{t.idx}=plot(TFA.time(pl.idx), pl.mdata(pl.idx,i_con),'Color',pl.col{t.idx},'LineStyle',pl.line{t.idx},'LineWidth',2);
+
+    
+
+    t.idx = t.idx+1;
 end
+
+title(sprintf('raw SSVEP amplitude timecourses | %s',vararg2str(pl.elec2plot_cluster{1})))
 xlim(pl.xlims)
 xlabel('time in ms')
-ylabel('modulation in %')
-legend([h.plm{:}],pl.con_label,'Location','SouthOutside','Orientation','horizontal')
+ylabel('amplitude in \muV/cm²')
+legend([h.plm{:}],pl.conlabel,'Location','SouthOutside','Orientation','horizontal','Interpreter','none')
 legend('boxoff')
 grid on
 
@@ -711,38 +720,58 @@ sav.filenames = 'TFA_SSVEPmod_largeclust_inducedremoved';
 % print(gcf,fullfile(sav.pathout,sav.filenames),'-depsc2', '-painters','-r300')
 
 
-% plot single subject data
+%  evoked bc
+pl.col = pl.concols;
+pl.col2 = [0.6 0.6 0.6];
+pl.line = {'-';'-';'-';'-';'-'};
 figure;
-set(gcf,'Position',[100 100 1000 900],'PaperPositionMode','auto')
+set(gcf,'Position',[100 100 700 400],'PaperPositionMode','auto')
 h.pl = {}; h.plsem=[];  h.plm = []; h.pls = []; h.plst = []; pl.con_label = [];
 t.idx = 1;
-for i_pos = 1:2
-    for i_con = 1:2
-        subplot(2,2,(i_pos-1)*2+i_con)
-        % data index
-        pl.idx = pl.xlims_i(1):pl.xlims_i(2);
-        
-        plot(TFA.time(pl.idx),squeeze(pl.data_bc(i_pos,pl.idx,i_con,:)))
-        hold on;
-        plot(TFA.time(pl.idx),squeeze(mean(pl.data_bc(i_pos,pl.idx,i_con,:),4)),'LineWidth',2,'Color',[0 0 0])
-        
-%         plot(TFA.time(pl.idx),squeeze(pl.data(i_pos,pl.idx,i_con,:)))
-%         hold on;
-%         plot(TFA.time(pl.idx),squeeze(mean(pl.data(i_pos,pl.idx,i_con,:),4)),'LineWidth',2,'Color',[0 0 0])
-        
-        xlim(pl.xlims)
-        xlabel('time in ms')
-        ylabel('modulation in %')
-        title(sprintf('%s %s',pl.lab_pos{i_pos}, pl.lab_con{i_con}))
-        
-        grid on
-    end
+
+for i_con = 1:size(pl.mdata,2)
+    % data index
+    pl.idx = pl.xlims_i(1):pl.xlims_i(2);
+
+    % plot SEM as boundary
+    % create data
+    pl.xconf = [TFA.time(pl.idx) TFA.time(pl.idx(end:-1:1))] ;
+    pl.yconf = [pl.mdata_bc(pl.idx,i_con)'+pl.semdata_bc(pl.idx,i_con)' ...
+        pl.mdata_bc(pl.idx(end:-1:1),i_con)'-pl.semdata_bc(pl.idx(end:-1:1),i_con)'];
+    % plot
+    h.plsem{t.idx} = fill(pl.xconf,pl.yconf,pl.col{t.idx}','EdgeColor','none','FaceAlpha',0.3);
+    hold on
+
+    % plot mean lines
+    h.plm{t.idx}=plot(TFA.time(pl.idx), pl.mdata_bc(pl.idx,i_con),'Color',pl.col{t.idx},'LineStyle',pl.line{t.idx},'LineWidth',2);
+
+    
+
+    t.idx = t.idx+1;
 end
+
+title(sprintf('baseline-corrected SSVEP amplitude timecourses | %s | base: [%1.0f %1.0f]ms', ...
+    vararg2str(pl.elec2plot_cluster{1}), pl.base))
+xlim(pl.xlims)
+xlabel('time in ms')
+ylabel('modulation in %')
+legend([h.plm{:}],pl.conlabel,'Location','SouthOutside','Orientation','horizontal','Interpreter','none')
+legend('boxoff')
+grid on
+
+sav.pathout = 'C:\Users\psy05cvd\Dropbox\work\matlab\AnalyzerUni\SSVEP_FShiftAlpha\figures\';
+sav.filenames = 'TFA_SSVEPmod_largeclust_inducedremoved';
+% print(gcf, fullfile(sav.pathout,sav.filenames),'-dpng','-r600')
+% saveas(gcf,fullfile(sav.pathout,sav.filenames),'fig')
+% print(gcf,fullfile(sav.pathout,sav.filenames),'-depsc2', '-painters','-r300')
+
+
+
 
 
 
 %% plot alpha timecourse
-pl.sub2plot = F.Subs2use;
+pl.sub2plot = 1:numel(F.Subs2use);
 pl.sub2plot = [1:14 16:35]; % sub 15 ith no SSVEP default = 1:numel(F.Subs2use)
 pl.alpha_range = [8 12];
 pl.alpha_range_i = dsearchn(TFA.frequency', pl.alpha_range');

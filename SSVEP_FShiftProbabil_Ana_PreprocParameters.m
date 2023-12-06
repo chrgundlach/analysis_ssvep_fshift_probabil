@@ -7,7 +7,7 @@ clearvars
 F.PathIn            = 'E:\work\data\SSVEP_FShift_Probabil\eeg\SCADS\';
 F.subjects          = cellfun(@(x) sprintf('%02.0f',x),num2cell(1:40),'UniformOutput', false)';
 % F.subs2use          = [9 10 11 12];%
-F.subs2use          = [1 3 4 5 6 7 9 10 11 12];
+F.subs2use          = [1 3 4 5 6 7 9 10 11 12 13 14];
 F.con2an            = {[10] [20] [30] [40] [50] [60]};
 F.con2an_label      = {'valid | target RDK1'; 'valid | target RDK2'; ...
     'invalid | target RDK2'; 'invalid | target RDK2';...

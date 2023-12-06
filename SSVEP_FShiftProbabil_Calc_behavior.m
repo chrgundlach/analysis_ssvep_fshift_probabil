@@ -6,8 +6,8 @@ p.path =                '\\psyall2.misc.intern.uni-leipzig.de\experimental_data\
 p.path =                'N:\AllgPsy\experimental_data\2023_FShift_Probabil\behavior\raw\';
 p.pathout =             'C:\Users\psy05cvd\Dropbox\work\R-statistics\experiments\ssvep_fshiftprobabil\data\';
 p.subs=                 arrayfun(@(x) sprintf('%02.0f',x),1:40,'UniformOutput',false)';
-p.subs2use=             [1 3:6 7 8 9 10 11 12];% 
-p.subs2use=             [1 3:6 7 9 10 11 12];%  % participant 2,8 measurement cancelled due to bad behavior
+% p.subs2use=             [1 3:6 7 8 9 10 11 12];% 
+p.subs2use=             [1 3:6 7 9 10 11 12 13 14 15];%  % participant 2,8 measurement cancelled due to bad behavior
 % p.subs2use =            [1 3 4 5];
 % pl.sub2plot =           [1:14 16:35]; % sub 15 ith no SSVEP default = 1:numel(F.Subs2use)
 p.responsewin =         [0.2 1.2]; % according to p.targ_respwin from run_FShiftAlpha
