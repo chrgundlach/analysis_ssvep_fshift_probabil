@@ -6,7 +6,7 @@ F.PathInEEG             = 'N:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg
 
 
 F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:40,'UniformOutput',false)';
-F.Subs2use              = [1 3 4 5 6 7 9 10 11 12 13 14 15 18 20 21 22]; 
+F.Subs2use              = [1 3 4 5 6 7 9 10 11 12 13 14 15 18 20 21 22 23]; 
                         % 2 and 8 are excluded as the didn't do the task properly, sub 11 has potentially low number of trials
 F.TFA.baseline          = [-500 -250];
 
@@ -472,7 +472,8 @@ pl.data_evo_bc = 100*(bsxfun(@rdivide, pl.data_evo, pl.data_evo(:,:,1,:))-1);
 % pl.data_evo_bc = bsxfun(@minus, pl.data_evo, pl.data_evo(:,:,1,:));
 pl.RDK.data_ind_bc_l = pl.data_ind_bc(:);
 pl.RDK.data_evo_bc_l = pl.data_evo_bc(:);
-pl.RDK.subs = repmat(pl.sub2plot,prod(size(pl.data_ind,[1 2 3])),1); pl.RDK.subs = pl.RDK.subs(:);
+% pl.RDK.subs = repmat(pl.sub2plot,prod(size(pl.data_ind,[1 2 3])),1); pl.RDK.subs = pl.RDK.subs(:);
+pl.RDK.subs = repmat(F.Subs2use(pl.sub2plot),prod(size(pl.data_ind,[1 2 3])),1); pl.RDK.subs = pl.RDK.subs(:);
 pl.RDK.RDK = repmat(pl.RDKlabel,1,prod(size(pl.data_ind,[2 3 4]))); pl.RDK.RDK=pl.RDK.RDK(:);
 pl.RDK.col = permute(repmat(pl.label.color_label,[1, 1, prod(size(pl.data_ind,[2 3]))]), [1 3 2]); pl.RDK.col=pl.RDK.col(:);
 pl.RDK.elec = permute(repmat(pl.label.elec,[1, 1, prod(size(pl.data_ind,[2 3]))]), [1 3 2]); pl.RDK.elec=pl.RDK.elec(:);
