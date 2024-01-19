@@ -21,7 +21,7 @@ p.chanlocs_path=    ['C:\Users\psy05cvd\Dropbox\work\matlab\Auswertungsskripte\A
 p.mean_path=        [p.path 'eeg\mean\'];
 p.subs=             cellfun(@(x) sprintf('%02.0f',x),num2cell(1:40),'UniformOutput', false)';
 % p.subs2use=         [1 3:6 7 9 10 11 12];%  % participant 2,8 measurement cancelled due to bad behavior
-p.subs2use=         [23];%
+p.subs2use=         [25];%
 p.part=             {'b';'c'};
 p.events=           {[10 11] [20 21] [30 31] [40 41] [50 51] [60 61]}; % trigger
 p.con1name =        'validity';
@@ -104,6 +104,7 @@ for i_sub=1:numel(p.subs2use)
     if EpochFlag
         % load
         EEG = pop_loadset('filename',[FileName '.set'], 'filepath', p.set_path);
+        % pop_eegplot(EEG,1,1,1)
         
         % epoch data
         EEG = pop_epoch( EEG, num2cell(unique(cell2mat(p.events))), p.epoch, 'epochinfo', 'yes');
@@ -141,7 +142,8 @@ for i_sub=1:numel(p.subs2use)
         EEG = eegF_Bipolarize(EEG);
         
         % remove linear drift and offset of EEG signals
-        EEG = eegF_Detrend(EEG,p.epoch2an); % 
+        EEG = eegF_Detrend(EEG,p.epoch2an); %
+        % pop_eegplot(EEG,1,1,1)
         
         % index trials with blinks and eye movements for later rejection
         [EEG_temp,Trials2Remove1] = eegF_RemoveBlinks(EEG,65,p.epoch2an,1); % letzte Parameter '1': Artefakte nur markiert
@@ -174,6 +176,7 @@ for i_sub=1:numel(p.subs2use)
         EEG = pop_rejepoch(EEG, EEG.reject.rejmanual, 0);
         % rereference to average reference
         EEG=pop_reref(EEG,[],'refstate',0);   %
+        % pop_eegplot(EEG,1,1,1)
         
         if ~exist(p.scads_path); mkdir(p.scads_path);end
         if ~exist(p.epoch_path); mkdir(p.epoch_path);end

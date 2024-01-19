@@ -2,11 +2,11 @@
 clearvars
 % F.PathInEEG             = 'D:\work\data\SSVEP_FShiftAlpha\eeg\TFA'; % with FWHM 1
 F.PathInEEG             = 'N:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg\tfa'; % with FWHM 1
-
+F.PathInEEG             = 'C:\Users\psy05cvd\Dropbox\work\projects\SSVEP_FShift_Probabil\EEG_data'; % with FWHM 1
 
 
 F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:40,'UniformOutput',false)';
-F.Subs2use              = [1 3 4 5 6 7 9 10 11 12 13 14 15 18 20 21 22 23]; 
+F.Subs2use              = [1 3 4 5 6 7 9 10 11 12 13 14 15 18 20 21 22 23 24 25]; 
                         % 2 and 8 are excluded as the didn't do the task properly, sub 11 has potentially low number of trials
 F.TFA.baseline          = [-500 -250];
 
@@ -82,6 +82,18 @@ diag.cols_frequency = [F.stim_colnames(1:3) num2cell(cell2mat(cellfun(@(x) sum(s
 %% plot grand mean FFT data | spectra | with focus on specific frequency
 % plotting parameters
 pl.elec2plot = {'O1';'Oz';'O2';'I1';'Iz';'I2'};
+% pl.elec2plot_cluster = {{TFA.electrodes(33:64).labels}';{TFA.electrodes(1:32).labels}';{TFA.electrodes(1:32).labels}'};
+pl.elec2plot_label = {'central'}; % which stimulus is best captured?
+
+% pl.elec2plot = {'O1';'Oz';'O2';'Iz'};
+% % pl.elec2plot_cluster = {{TFA.electrodes(33:64).labels}';{TFA.electrodes(1:32).labels}';{TFA.electrodes(1:32).labels}'};
+% pl.elec2plot_label = {'central_small'}; % which stimulus is best captured?
+% 
+% pl.elec2plot = {'P5';'P7';'PO7';'PO3'; 'O1';'Oz';'O2';'I1';'Iz';'I2'; 'PO4'; 'P8';'P6';'PO8'};
+% pl.elec2plot_label = {'large'}; % which stimulus is best captured?
+
+% plotting parameters
+pl.elec2plot = {'POz';'O1';'Oz';'O2';'Iz'};
 % pl.elec2plot_cluster = {{TFA.electrodes(33:64).labels}';{TFA.electrodes(1:32).labels}';{TFA.electrodes(1:32).labels}'};
 pl.elec2plot_label = {'central'}; % which stimulus is best captured?
 
@@ -225,8 +237,8 @@ for i_freq = 1:numel(F.stim_frequency) % loop across positions
     % index frequencies of interest 
     t.fidx = dsearchn(TFA.fftfreqs', (F.stim_frequency(i_freq) + pl.freqrange)');
 
-    pl.data_ind(i_freq,:) = squeeze(mean(TFA.fftdata_ind(t.fidx,:,:,pl.time2plot,pl.sub2plot(i_sub)),[1,3,4]));
-    pl.data_evo(i_freq,:) = squeeze(mean(TFA.fftdata_evo(t.fidx,:,:,pl.time2plot,pl.sub2plot(i_sub)),[1,3,4]));
+    pl.data_ind(i_freq,:) = squeeze(mean(TFA.fftdata_ind(t.fidx(1):t.fidx(2),:,:,pl.time2plot,pl.sub2plot),[1,3,5]));
+    pl.data_evo(i_freq,:) = squeeze(mean(TFA.fftdata_evo(t.fidx(1):t.fidx(2),:,:,pl.time2plot,pl.sub2plot),[1,3,5]));
 end
 
 
@@ -420,6 +432,16 @@ pl.elec2plot_cluster = {{'O1';'Oz';'O2';'I1';'Iz';'I2'};...
     {'O1';'Oz';'O2';'I1';'Iz';'I2'};...
     {'O1';'Oz';'O2';'I1';'Iz';'I2'}};
 
+% small cluster
+pl.elec2plot_cluster = {{'POz';'O1';'Oz';'O2';'Iz'};...
+    {'POz';'O1';'Oz';'O2';'Iz'};...
+    {'POz';'O1';'Oz';'O2';'Iz'}};
+
+% % broad cluster
+% pl.elec2plot_cluster = { {'P5';'P7';'PO7';'PO3'; 'O1';'Oz';'O2';'I1';'Iz';'I2'; 'PO4'; 'P8';'P6';'PO8'};...
+%     {'P5';'P7';'PO7';'PO3'; 'O1';'Oz';'O2';'I1';'Iz';'I2'; 'PO4'; 'P8';'P6';'PO8'};...
+%     {'P5';'P7';'PO7';'PO3'; 'O1';'Oz';'O2';'I1';'Iz';'I2'; 'PO4'; 'P8';'P6';'PO8'}};
+
 
 pl.elec2plot_cluster_label = {'central';'central';'central'}; % which stimulus is best captured?
 pl.data_ind = []; pl.data_evo = [];
@@ -545,6 +567,8 @@ t.path = 'C:\Users\psy05cvd\Dropbox\work\R-statistics\experiments\ssvep_fshiftpr
 t.datestr = datestr(now,'mm-dd-yyyy_HH-MM');
 % t.filename = 'FFT_SSVEP_Amp_data_withoutBehav_sepRDK_peripheral_2elecs';
 t.filename = 'FFT_SSVEP_largeclust';
+% t.filename = 'FFT_SSVEP_smallcentralclust';
+t.filename = 'FFT_SSVEP_smallcentralclust_fiveelecs';
 % write to textfile
 % writetable(R_Mat.all_t,fullfile(t.path,sprintf('%s.csv',t.filename)),'Delimiter',';')
 
@@ -575,9 +599,21 @@ pl.concols = num2cell([25 138 130; 241 131 26; 41 60 74; 240 63 63; 255 120 120]
 
 
 % % standard cluster:
+% pl.elec2plot_cluster = {{'O1';'Oz';'O2';'I1';'Iz';'I2'};...
+%     {'O1';'Oz';'O2';'I1';'Iz';'I2'};...
+%     {'O1';'Oz';'O2';'I1';'Iz';'I2'}};
+
+pl.elec2plot_cluster = {{'O1';'Oz';'O2';'Iz'};...
+    {'O1';'Oz';'O2';'Iz'};...
+    {'O1';'Oz';'O2';'Iz'}};
+
 pl.elec2plot_cluster = {{'O1';'Oz';'O2';'I1';'Iz';'I2'};...
-    {'O1';'Oz';'O2';'I1';'Iz';'I2'};...
-    {'O1';'Oz';'O2';'I1';'Iz';'I2'}};
+    {'O1';'Oz';'O2';'Iz'};...
+    {'O1';'Oz';'O2';'Iz'}};
+
+% pl.elec2plot_cluster = { {'P5';'P7';'PO7';'PO3'; 'O1';'Oz';'O2';'I1';'Iz';'I2'; 'PO4'; 'P8';'P6';'PO8'};...
+%     {'P5';'P7';'PO7';'PO3'; 'O1';'Oz';'O2';'I1';'Iz';'I2'; 'PO4'; 'P8';'P6';'PO8'};...
+%     {'P5';'P7';'PO7';'PO3'; 'O1';'Oz';'O2';'I1';'Iz';'I2'; 'PO4'; 'P8';'P6';'PO8'}};
 
 % exploratory cluster:
 % % central
