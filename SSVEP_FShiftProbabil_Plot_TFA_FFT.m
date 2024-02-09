@@ -104,13 +104,14 @@ pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) strcmpi({TFA.electrodes.labels}
 % plot channels with labels
 % findchannellabel( 1:64 , 1)
 
-pl.time2plot = [1]; % [1 2 4]
+pl.time2plot = [2]; % [1 2 4]
 pl.sub2plot = [1:numel(F.Subs2use)]; % sub 15 ith no SSVEP default = 1:numel(F.Subs2use)
 
 % extract data
 pl.data_ind = squeeze(mean(TFA.fftdata_ind(:,pl.elec2plot_i,:,pl.time2plot,pl.sub2plot),[2,3,4]));
 pl.data_evo = squeeze(mean(TFA.fftdata_evo(:,pl.elec2plot_i,:,pl.time2plot,pl.sub2plot),[2,3,4]));
 
+pl.foi = [TFA.RDK(1).RDK.freq];
 
 
 
@@ -162,10 +163,10 @@ xlim([0 50])
 xlabel('frequency in Hz')
 ylabel('amplitude in \muV')
 title(sprintf('evoked GrandMean FFT spectra | N = %1.0f',numel(pl.sub2plot)),'Interpreter','none')
-% vline(pl.foi,'k:')
+vline(pl.foi,'k:')
 
 % draw topography with electrode positions
-h.a1 = axes('position',[0.72 0.68 0.23 0.23],'Visible','off');
+h.a1 = axes('position',[0.65 0.60 0.3 0.3],'Visible','off');
 topoplot(find(pl.elec2plot_i),TFA(1).electrodes(1:64),'style','blank','electrodes', 'on','whitebk','on',...
     'emarker2',{find(pl.elec2plot_i),'o',[255 133 4]./255,4,1}); % [204 107 36; 15 71 101; 131 208 173]./255
 
@@ -269,20 +270,20 @@ for i_freq = 1:size(pl.data_ind,1)
     colorbar
 end
 
-% figure;
-% set(gcf,'Position',[100 100 700 200],'PaperPositionMode','auto')
-% for i_pos = 1:size(pl.data_ind,2)
-%     h.s(i_pos,1)=subplot(1,size(pl.data_ind,2),i_pos);
-%     t.pldata = squeeze(mean( pl.data_evo,3));
-% %     topoplot( t.pldata(:,i_freq), TFA.electrodes(1:64), ...
-% %         'shading', 'interp', 'numcontour', 0, 'maplimits',[0 max(t.pldata(:))],'conv','on','colormap',fake_parula,...
-% %         'whitebk','on');
-%     topoplot( t.pldata(:,i_pos), TFA.electrodes(1:64), ...
-%         'numcontour', 0, 'maplimits',[0 max(t.pldata(:,i_pos))],'conv','on','colormap',fake_parula,...
+figure;
+set(gcf,'Position',[100 100 700 200],'PaperPositionMode','auto')
+for i_freq = 1:size(pl.data_evo,1)
+    h.s(i_freq,1)=subplot(1,size(pl.data_evo,1),i_freq);
+    t.pldata = squeeze(mean( pl.data_evo,3));
+%     topoplot( t.pldata(:,i_freq), TFA.electrodes(1:64), ...
+%         'shading', 'interp', 'numcontour', 0, 'maplimits',[0 max(t.pldata(:))],'conv','on','colormap',fake_parula,...
 %         'whitebk','on');
-%     title(sprintf('evoked %s',pl.pos2plot{i_pos}))
-%     colorbar
-% end
+    topoplot( pl.data_evo(i_freq,:), TFA.electrodes(1:64), ...
+        'shading', 'interp', 'numcontour', 0, 'maplimits',[0 max( pl.data_evo(i_freq,:),[],'all')],'conv','on','colormap',fake_parula,...
+        'whitebk','on');
+    title(sprintf('evoked %1.0fHz',F.stim_frequency(i_freq)))
+    colorbar
+end
 
 % % % draw colorbar into new axis
 % t.pos2 = get(h.s{i_pl,1},'Position');
