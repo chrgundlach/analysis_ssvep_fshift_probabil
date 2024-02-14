@@ -78,7 +78,7 @@ for i_sub = 1:numel(F.sub2use)
     [t.behavior.urepoch] = deal(t.ur_epoch{:});
 
 
-    for i_event = 1:size(t.behavior,1)
+    for i_event = 1:numel(t.behavior)
         % onset times after cue
         t.behavior(i_event).postcue_onset = ...
             (t.behavior(i_event).event_onset_times-t.behavior(i_event).pre_cue_times)*1000;
