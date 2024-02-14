@@ -108,17 +108,21 @@ pl.con_label = [pl.con_contrast{2,2}{:}];
 plot_data_topoarray(EP.electrodes, pl.dat2plot_rs,'ERP','times',EP.time,'conds',pl.con_label)
 
 
-%% plot ERPs exploratively for specified electrodes
+%% plot ERPs exploratively for specified electrodes | cue validity
 
 % loop through conditions defined in contrasts
 pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
     'trial_timing_type', {{'regular'}}; ...
     'cue_validity_label', {{'valid'};{'neutral'};{'invalid'}}};
 pl.sub2plot = 1:numel(F.Subs2use);
-pl.elec2plot = {'POz';'Oz';'O1';'O2';'Iz'}; % for N1 component centro-parietal
-% pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal
+% pl.elec2plot = {'POz';'Oz';'O1';'O2';'Iz'}; % for N1 component centro-parietal
+pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal
 % pl.elec2plot = {'P6';'P8';'PO8';'P10';'P5';'P7';'PO7';'P9'}; % for N2 component lateral
 % pl.elec2plot = {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10';}; % for N2 component posterior!
+% pl.elec2plot = {'P8';'PO8';'P10';'P7';'PO7';'P9'}; % for P1 component lateral !
+% pl.elec2plot = {'POz'}; % early N2 SN?
+pl.elec2plot = {'CPz';'Cz'}; % early N2 SN?
+
 pl.elec2plot_i = ...
     any(cell2mat(cellfun(@(x) strcmp({EP.electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1);
 
@@ -211,7 +215,224 @@ topoplot(find(pl.elec2plot_i),EP.electrodes(1:64),'style','blank','electrodes', 
 
 set(gcf, 'Color', [1 1 1]);
 
-%% plot topagraphies
+%% plot ERPs exploratively for specified electrodes | hit vs miss
+
+% loop through conditions defined in contrasts
+pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
+    'trial_timing_type', {{'regular'}}; ...
+    'event_response_type', {{'hit'};{'FA','error','miss'}}};
+pl.sub2plot = 1:numel(F.Subs2use);
+% pl.elec2plot = {'P8';'PO8';'P10';'P7';'PO7';'P9'}; % for P1 component lateral !
+pl.elec2plot = {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10';}; % for N2 component posterior!
+% pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal!
+% pl.elec2plot = {'POz';'Oz';'O1';'O2';'Iz'}; % for N1 component centro-parietal
+% pl.elec2plot = {'P6';'P8';'PO8';'P10';'P5';'P7';'PO7';'P9'}; % for N2 component lateral
+
+% pl.elec2plot = {'POz'}; % early N2 SN?
+% pl.elec2plot = {'CPz';'Cz'}; % early N2 SN?
+
+pl.elec2plot_i = ...
+    any(cell2mat(cellfun(@(x) strcmp({EP.electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1);
+
+pl.time2plot = [-100 500]; % time in ms
+pl.time2plot = [-100 700]; % time in ms
+pl.time2plot_i = dsearchn(EP.time', pl.time2plot');
+
+pl.concols = num2cell([63 63 240; 240 63 63]'./255,1);
+pl.con_label = {'hit';'error+FA+miss'};
+
+
+% preallocate data
+pl.dat2plot = nan([sum(pl.elec2plot_i), ...             % 1st dim channels
+    size(EP.time,2), ...                                % 2nd dim time
+    cellfun(@(x) size(x,1), pl.con_contrast(:,2))', ... % 3rd to n dim = levels defind in pl.con_contrast
+    numel(pl.sub2plot)]);                               % n+1 dim participants
+
+% extract data across contrasts
+% define how to loop through contrasts
+t.cont = cellfun(@(x) 1:size(x,1), pl.con_contrast(:,2), 'UniformOutput', false);
+t.contidx = combvec(t.cont{:});
+% loop across participants
+for i_sub = 1:numel(pl.sub2plot)
+    t.behavior = EP.behavior{pl.sub2plot(i_sub)};
+    t.epdata = EP.filtdata{pl.sub2plot(i_sub)}.data;
+
+    % loop through contrasts
+    for i_cont = 1:size(t.contidx,2)
+        % define evaluation syntax
+                
+        % preallocate logical idx for trials
+        t.idx = false(size(t.contidx,1),numel(t.behavior ));
+        for i_contstep = 1:size(t.contidx,1)
+            % index step
+            t.idx(i_contstep,:) = ...
+                any( ... % if it is more than one level, combine
+                cell2mat( ...
+                cellfun(@(x) strcmp({t.behavior.(pl.con_contrast{i_contstep,1})},x), ...
+                pl.con_contrast{i_contstep,2}{t.contidx(i_contstep,i_cont)}, 'UniformOutput', false)' ...
+                ) ...
+                ,1);
+        end
+        % combine all contrast conditions
+        t.idx_all = all(t.idx,1);
+        
+        % average across trials
+        t.text = sprintf("%1.0f,",t.contidx(:,i_cont));
+        t.evaltext = sprintf("pl.dat2plot(:,:,%si_sub) = mean(t.epdata(pl.elec2plot_i,:,t.idx_all),3);",t.text);
+        eval(t.evaltext)
+    end
+end
+
+% reshape pl.data
+pl.dat2plot_rs = squeeze(mean(pl.dat2plot,1));
+
+pl.data_m = mean(pl.dat2plot_rs,3);
+pl.data_sem = std(pl.dat2plot_rs,1,3)./sqrt(numel(pl.sub2plot));
+
+
+
+figure;
+set(gcf,'Position',[100 100 600 300],'PaperPositionMode','auto')
+pl.idx = pl.time2plot_i(1):pl.time2plot_i(2);
+h.plsem=[];  h.plm = []; h.pls = []; h.plst = [];
+
+for i_con = 1:size(pl.data_m,2)
+    % plot SEM as boundary
+    % create data
+    pl.xconf = [EP.time(pl.idx) EP.time(pl.idx(end:-1:1))] ;
+    pl.yconf = [pl.data_m(pl.idx,i_con)' + pl.data_sem(pl.idx,i_con)' ...
+        pl.data_m(pl.idx(end:-1:1),i_con)' - pl.data_sem(pl.idx(end:-1:1),i_con)'];
+    % plot
+    h.plsem{i_con} = fill(pl.xconf,pl.yconf,pl.concols{i_con}','EdgeColor','none','FaceAlpha',0.3);
+    hold on
+    
+    % plot mean lines
+    h.plm{i_con}=...
+        plot(EP.time(pl.idx), pl.data_m(pl.idx,i_con),'Color',pl.concols{i_con},'LineWidth',2);
+end
+xlim(pl.time2plot)
+xlabel('time in ms')
+ylabel('amplitude in \muV/cm²')
+legend([h.plm{:}],pl.con_label,'Location','EastOutside','box','off')
+grid on
+set(gca, 'Ydir','reverse')
+
+
+h.ax2 = axes('Position', [0.725, .63, .25, .25],'Visible','off');
+topoplot(find(pl.elec2plot_i),EP.electrodes(1:64),'style','blank','electrodes', 'on','whitebk','on',...
+    'emarker2',{find(pl.elec2plot_i),'o','r',3,1});
+
+set(gcf, 'Color', [1 1 1]);
+
+%% plot ERPs exploratively for specified electrodes | chroma+ or chroma-
+% loop through conditions defined in contrasts
+pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
+    'trial_timing_type', {{'regular'}}; ...
+    'event_response_type', {{'hit'};{'FA','error','miss'}}};
+pl.sub2plot = 1:numel(F.Subs2use);
+% pl.elec2plot = {'P8';'PO8';'P10';'P7';'PO7';'P9'}; % for P1 component lateral !
+pl.elec2plot = {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10';}; % for N2 component posterior!
+% pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal!
+% pl.elec2plot = {'POz';'Oz';'O1';'O2';'Iz'}; % for N1 component centro-parietal
+% pl.elec2plot = {'P6';'P8';'PO8';'P10';'P5';'P7';'PO7';'P9'}; % for N2 component lateral
+
+% pl.elec2plot = {'POz'}; % early N2 SN?
+% pl.elec2plot = {'CPz';'Cz'}; % early N2 SN?
+
+pl.elec2plot_i = ...
+    any(cell2mat(cellfun(@(x) strcmp({EP.electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1);
+
+pl.time2plot = [-100 500]; % time in ms
+pl.time2plot = [-100 700]; % time in ms
+pl.time2plot_i = dsearchn(EP.time', pl.time2plot');
+
+pl.concols = num2cell([63 63 240; 240 63 63]'./255,1);
+pl.con_label = {'hit';'error+FA+miss'};
+
+
+% preallocate data
+pl.dat2plot = nan([sum(pl.elec2plot_i), ...             % 1st dim channels
+    size(EP.time,2), ...                                % 2nd dim time
+    cellfun(@(x) size(x,1), pl.con_contrast(:,2))', ... % 3rd to n dim = levels defind in pl.con_contrast
+    numel(pl.sub2plot)]);                               % n+1 dim participants
+
+% extract data across contrasts
+% define how to loop through contrasts
+t.cont = cellfun(@(x) 1:size(x,1), pl.con_contrast(:,2), 'UniformOutput', false);
+t.contidx = combvec(t.cont{:});
+% loop across participants
+for i_sub = 1:numel(pl.sub2plot)
+    t.behavior = EP.behavior{pl.sub2plot(i_sub)};
+    t.epdata = EP.filtdata{pl.sub2plot(i_sub)}.data;
+
+    % loop through contrasts
+    for i_cont = 1:size(t.contidx,2)
+        % define evaluation syntax
+                
+        % preallocate logical idx for trials
+        t.idx = false(size(t.contidx,1),numel(t.behavior ));
+        for i_contstep = 1:size(t.contidx,1)
+            % index step
+            t.idx(i_contstep,:) = ...
+                any( ... % if it is more than one level, combine
+                cell2mat( ...
+                cellfun(@(x) strcmp({t.behavior.(pl.con_contrast{i_contstep,1})},x), ...
+                pl.con_contrast{i_contstep,2}{t.contidx(i_contstep,i_cont)}, 'UniformOutput', false)' ...
+                ) ...
+                ,1);
+        end
+        % combine all contrast conditions
+        t.idx_all = all(t.idx,1);
+        
+        % average across trials
+        t.text = sprintf("%1.0f,",t.contidx(:,i_cont));
+        t.evaltext = sprintf("pl.dat2plot(:,:,%si_sub) = mean(t.epdata(pl.elec2plot_i,:,t.idx_all),3);",t.text);
+        eval(t.evaltext)
+    end
+end
+
+% reshape pl.data
+pl.dat2plot_rs = squeeze(mean(pl.dat2plot,1));
+
+pl.data_m = mean(pl.dat2plot_rs,3);
+pl.data_sem = std(pl.dat2plot_rs,1,3)./sqrt(numel(pl.sub2plot));
+
+
+
+figure;
+set(gcf,'Position',[100 100 600 300],'PaperPositionMode','auto')
+pl.idx = pl.time2plot_i(1):pl.time2plot_i(2);
+h.plsem=[];  h.plm = []; h.pls = []; h.plst = [];
+
+for i_con = 1:size(pl.data_m,2)
+    % plot SEM as boundary
+    % create data
+    pl.xconf = [EP.time(pl.idx) EP.time(pl.idx(end:-1:1))] ;
+    pl.yconf = [pl.data_m(pl.idx,i_con)' + pl.data_sem(pl.idx,i_con)' ...
+        pl.data_m(pl.idx(end:-1:1),i_con)' - pl.data_sem(pl.idx(end:-1:1),i_con)'];
+    % plot
+    h.plsem{i_con} = fill(pl.xconf,pl.yconf,pl.concols{i_con}','EdgeColor','none','FaceAlpha',0.3);
+    hold on
+    
+    % plot mean lines
+    h.plm{i_con}=...
+        plot(EP.time(pl.idx), pl.data_m(pl.idx,i_con),'Color',pl.concols{i_con},'LineWidth',2);
+end
+xlim(pl.time2plot)
+xlabel('time in ms')
+ylabel('amplitude in \muV/cm²')
+legend([h.plm{:}],pl.con_label,'Location','EastOutside','box','off')
+grid on
+set(gca, 'Ydir','reverse')
+
+
+h.ax2 = axes('Position', [0.725, .63, .25, .25],'Visible','off');
+topoplot(find(pl.elec2plot_i),EP.electrodes(1:64),'style','blank','electrodes', 'on','whitebk','on',...
+    'emarker2',{find(pl.elec2plot_i),'o','r',3,1});
+
+set(gcf, 'Color', [1 1 1]);
+
+%% plot topagraphies | cue validity
 
 
 % loop through conditions defined in contrasts
@@ -221,8 +442,10 @@ pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
 pl.sub2plot = 1:numel(F.Subs2use);
 
 pl.time2plot = [160 190]; % time in ms
+pl.time2plot = [160 250]; % time in ms
+pl.time2plot = [100 150]; % time in ms
 % pl.time2plot = [250 350]; % time in ms
-% pl.time2plot = [400 500]; % time in ms
+pl.time2plot = [400 500]; % time in ms
 pl.time2plot_i = dsearchn(EP.time', pl.time2plot');
 
 
@@ -284,7 +507,7 @@ for i_con = 1:size(pl.data_m,2)
     subplot(1,size(pl.data_m,2)+1,i_con)
     
     topoplot(pl.data_m(:,i_con), EP.electrodes(1:64), ...
-            'shading', 'interp', 'numcontour', 0, 'maplimits',pl.clims,'conv','on','colormap',fake_parula,...
+            'shading', 'interp', 'numcontour', 0, 'maplimits',pl.clims,'conv','on','colormap',flipud(cbrewer2('RdBu')),...
             'whitebk','on'); % 'colormap',fake_parula; 'colormap',flipud(cbrewer2('RdBu'))
     
     title(sprintf("%s\n[%1.0f %1.0f]ms",pl.con_label{i_con},pl.time2plot))
@@ -294,7 +517,7 @@ end
 subplot(1,size(pl.data_m,2)+1,i_con+1)
 
 topoplot(mean(pl.data_m,2), EP.electrodes(1:64), ...
-    'shading', 'interp', 'numcontour', 0, 'maplimits',pl.clims,'conv','on','colormap',fake_parula,...
+    'shading', 'interp', 'numcontour', 0, 'maplimits',pl.clims,'conv','on','colormap',flipud(cbrewer2('RdBu')),...
     'whitebk','on'); % 'colormap',fake_parula; 'colormap',flipud(cbrewer2('RdBu'))
 
 title(sprintf("mean con\n[%1.0f %1.0f]ms",pl.time2plot))
