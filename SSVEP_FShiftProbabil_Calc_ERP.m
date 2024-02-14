@@ -27,8 +27,8 @@ F.con1label             = {'valid';'valid';'invalid;';'invalid';'neutral';'neutr
 F.con2name              = 'target position';
 F.con2label             = {'RDK1';'RDK1';'RDK1';'RDK1';'RDK1';'RDK1';'RDK2';'RDK2';'RDK2';'RDK2';'RDK2';'RDK2'};
 F.con3name              = 'event type';
-F.con2label             = {'chroma+';'chroma-';'chroma+';'chroma-';'chroma+';'chroma-';'chroma+';'chroma-';'chroma+';'chroma-';'chroma+';'chroma-'};
-F.targtype              = {'chroma+';'chroma-'};
+F.con2label             = {'chroma-';'chroma+';'chroma-';'chroma+';'chroma-';'chroma+';'chroma-';'chroma+';'chroma-';'chroma+';'chroma-';'chroma+'};
+F.targtype              = {'chroma-';'chroma+'};
 
 %% start processing
 %% loop across subjects
