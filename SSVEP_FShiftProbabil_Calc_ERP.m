@@ -19,7 +19,7 @@ F.EEGChans              = 64;
 F.ERPepoch              = [-0.5 1];
 F.ERPbase               = [-0.1 0]; % erp baseline in s
 F.CSD_flag              = 1; % 0 = no; 1 = yes
-F.ERP_FiltFreq          = [0 18];
+F.ERP_FiltFreq          = [0 15];
 
 %F.TFAfreqs              = [5:(1/6):40];
 F.con1name              = 'validity';
