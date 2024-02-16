@@ -113,15 +113,19 @@ plot_data_topoarray(EP.electrodes, pl.dat2plot_rs,'ERP','times',EP.time,'conds',
 % loop through conditions defined in contrasts
 pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
     'trial_timing_type', {{'regular'}}; ...
+    'event_response_type', {{'hit'}}; ...
+%     'event_response_type', {{'hit','FA','error','miss'}}; ...
     'cue_validity_label', {{'valid'};{'neutral'};{'invalid'}}};
 pl.sub2plot = 1:numel(F.Subs2use);
-% pl.elec2plot = {'POz';'Oz';'O1';'O2';'Iz'}; % for N1 component centro-parietal
-pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal
-% pl.elec2plot = {'P6';'P8';'PO8';'P10';'P5';'P7';'PO7';'P9'}; % for N2 component lateral
-% pl.elec2plot = {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10';}; % for N2 component posterior!
 % pl.elec2plot = {'P8';'PO8';'P10';'P7';'PO7';'P9'}; % for P1 component lateral !
+% pl.elec2plot = {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10';}; % for N2 component posterior!
+pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal!
+% pl.elec2plot = {'POz';'Oz';'O1';'O2';'Iz'}; % for N1 component centro-parietal
+% pl.elec2plot = {'P6';'P8';'PO8';'P10';'P5';'P7';'PO7';'P9'}; % for N2 component lateral
 % pl.elec2plot = {'POz'}; % early N2 SN?
-pl.elec2plot = {'CPz';'Cz'}; % early N2 SN?
+% pl.elec2plot = {'CPz';'Cz'}; % early N2 SN?
+
+pl.con_label = {'valid';'neutral';'invalid'};
 
 pl.elec2plot_i = ...
     any(cell2mat(cellfun(@(x) strcmp({EP.electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1);
@@ -180,7 +184,7 @@ pl.dat2plot_rs = squeeze(mean(pl.dat2plot,1));
 pl.data_m = mean(pl.dat2plot_rs,3);
 pl.data_sem = std(pl.dat2plot_rs,1,3)./sqrt(numel(pl.sub2plot));
 
-pl.con_label = [pl.con_contrast{2,2}{:}];
+
 
 figure;
 set(gcf,'Position',[100 100 600 300],'PaperPositionMode','auto')
@@ -223,8 +227,8 @@ pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
     'event_response_type', {{'hit'};{'FA','error','miss'}}};
 pl.sub2plot = 1:numel(F.Subs2use);
 % pl.elec2plot = {'P8';'PO8';'P10';'P7';'PO7';'P9'}; % for P1 component lateral !
-pl.elec2plot = {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10';}; % for N2 component posterior!
-% pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal!
+% pl.elec2plot = {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10';}; % for N2 component posterior!
+pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal!
 % pl.elec2plot = {'POz';'Oz';'O1';'O2';'Iz'}; % for N1 component centro-parietal
 % pl.elec2plot = {'P6';'P8';'PO8';'P10';'P5';'P7';'PO7';'P9'}; % for N2 component lateral
 
@@ -328,11 +332,13 @@ set(gcf, 'Color', [1 1 1]);
 % loop through conditions defined in contrasts
 pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
     'trial_timing_type', {{'regular'}}; ...
-    'event_response_type', {{'hit'};{'FA','error','miss'}}};
+    'event_response_type', {{'hit'}}; ...
+%     'event_response_type', {{'hit','FA','error','miss'}}; ...
+    'evnt_type_label', {{'chroma+'};{'chroma-'}}};
 pl.sub2plot = 1:numel(F.Subs2use);
 % pl.elec2plot = {'P8';'PO8';'P10';'P7';'PO7';'P9'}; % for P1 component lateral !
-pl.elec2plot = {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10';}; % for N2 component posterior!
-% pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal!
+% pl.elec2plot = {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10';}; % for N2 component posterior!
+pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal!
 % pl.elec2plot = {'POz';'Oz';'O1';'O2';'Iz'}; % for N1 component centro-parietal
 % pl.elec2plot = {'P6';'P8';'PO8';'P10';'P5';'P7';'PO7';'P9'}; % for N2 component lateral
 
@@ -346,8 +352,8 @@ pl.time2plot = [-100 500]; % time in ms
 pl.time2plot = [-100 700]; % time in ms
 pl.time2plot_i = dsearchn(EP.time', pl.time2plot');
 
-pl.concols = num2cell([63 63 240; 240 63 63]'./255,1);
-pl.con_label = {'hit';'error+FA+miss'};
+pl.concols = num2cell([240 63 240; 100 63 100]'./255,1);
+pl.con_label = {'chroma+';'chroma-'};
 
 
 % preallocate data
@@ -522,3 +528,42 @@ topoplot(mean(pl.data_m,2), EP.electrodes(1:64), ...
 
 title(sprintf("mean con\n[%1.0f %1.0f]ms",pl.time2plot))
 colorbar
+
+%% export single trial erp data for R analysis
+pl.sub2plot = 1:numel(F.Subs2use);
+pl.erpparams = { ...
+    'PD130', [100 180], {'P8';'PO8';'P10';'P7';'PO7';'P9'}; ...
+    'N2', [250 350], {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10'}; ...
+    'P300', [400 550], {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'} ...
+    };
+
+% append behavioral data
+out.data = horzcat(EP.behavior{pl.sub2plot});
+
+% add participant number
+t.subs = [];
+for i_sub = 1:numel(pl.sub2plot)
+    t.subs = [t.subs; ...
+        repmat( ...
+        num2strcell(F.Subs2use(pl.sub2plot(i_sub))), ...
+        numel(EP.behavior{pl.sub2plot(i_sub)}), ...
+        1)];
+end
+[out.data.participants] = deal(t.subs{:});
+
+% extract data
+for i_erp = 1:size(pl.erpparams,1)
+    t.erpdata = [];
+    for i_sub = 1:numel(pl.sub2plot)
+        % index electrodes
+        pl.elec2plot_i = ...
+            any(cell2mat(cellfun(@(x) strcmp({EP.electrodes.labels},x), pl.erpparams{i_erp,3}, 'UniformOutput',false)),1);
+        pl.time2plot_i = dsearchn(EP.time', pl.erpparams{i_erp,2}');
+        % extract erpdata
+        t.erpdata = [t.erpdata; ...
+            squeeze(mean(EP.filtdata{pl.sub2plot(i_sub)}.data(pl.elec2plot_i,pl.time2plot_i(1):pl.time2plot_i(2),:),[1,2]))];
+    end
+    % append values
+    t.erpdata_cell = num2cell(t.erpdata);
+    [out.data.(pl.erpparams{i_erp,1})] = deal(t.erpdata_cell{:});
+end
