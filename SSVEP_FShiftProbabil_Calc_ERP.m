@@ -7,10 +7,10 @@ F.PathInEEG             = fullfile(F.Pathlocal, 'eeg\epoch_erp\');
 F.PathInBehavior        = fullfile(F.Pathlocal, 'behavior\raw\');
 F.PathInSCADS           = fullfile(F.Pathlocal, 'eeg\SCADS_erp\');
 F.PathOut               = fullfile(F.Pathlocal, 'eeg\erp\'); 
-F.subjects              = arrayfun(@(x) sprintf('%02.0f',x),1:30,'UniformOutput',false)';
+F.subjects              = arrayfun(@(x) sprintf('%02.0f',x),1:50,'UniformOutput',false)';
 F.sub2use               = [1 3 4 5 6 7 9 10 11 12 13 14 15 18 20 21 22 23 24 25];%:53;
 F.sub2use               = [1 3 4 5 6 7 9 10 11 13 15 18 20 21 22 23 24 25];%:53; % for subject 12, 14: eeg and behavior data don't match
-F.sub2use               = [27:31];%:53;
+F.sub2use               = [31:31];%:53;
 
 F.trigger               = {[111] [112] [121] [122] [131] [132] [211] [212] [221] [222] [231] [232]}; % regular
 % F.trigger               = {[100];[200]};
@@ -42,6 +42,24 @@ for i_sub = 1:numel(F.sub2use)
     t.files = dir(fullfile(F.PathInBehavior,sprintf('VP%s_timing*.mat',F.subjects{F.sub2use(i_sub)})));
     [t.val t.idx ]=max([t.files.datenum]);
     behavior = load(fullfile(F.PathInBehavior,t.files(t.idx).name));
+
+
+    temp.files = dir(fullfile(F.PathInBehavior,sprintf('VP%s_timing*.mat',F.subjects{F.sub2use(i_sub)})));
+    behavior.resp.experiment = repmat({[nan]},1,17);
+    behavior.button_presses.experiment = repmat({[nan]},1,17);
+    for i_fi = 1:numel(temp.files)
+        temp.data_in{i_fi}=load(sprintf('%s%s',F.PathInBehavior,temp.files(i_fi).name));
+        % extract relevant data
+        try behavior.conmat.experiment = temp.data_in{i_fi}.conmat.experiment;
+        end
+        if any(strcmp(fieldnames(temp.data_in{i_fi}.resp),'experiment'))
+            temp.index1 = find(~cellfun(@isempty,temp.data_in{i_fi}.resp.experiment));
+            temp.index2 = cell2mat(cellfun(@(x) ~isempty(cell2mat({x(:).trialnumber})), temp.data_in{i_fi}.resp.experiment(temp.index1),'UniformOutput',false));
+            behavior.resp.experiment(temp.index1(temp.index2))=temp.data_in{i_fi}.resp.experiment(temp.index1(temp.index2));
+            behavior.button_presses.experiment(temp.index1(temp.index2))=temp.data_in{i_fi}.button_presses.experiment(temp.index1(temp.index2));
+        end
+    end
+
     
          
     %% do csd transform

@@ -20,8 +20,8 @@ p.responsewin =         [0.2 1.2]; % according to p.targ_respwin from run_FShift
 for i_sub = 1:numel(p.subs2use)
     % load data
     temp.files = dir(sprintf('%sVP%s_timing*.mat',p.path,p.subs{p.subs2use(i_sub)}));
-    data_in.resp.experiment = repmat({[nan]},1,14);
-    data_in.button_presses.experiment = repmat({[nan]},1,14);
+    data_in.resp.experiment = repmat({[nan]},1,17);
+    data_in.button_presses.experiment = repmat({[nan]},1,17);
     for i_fi = 1:numel(temp.files)
         temp.data_in{i_fi}=load(sprintf('%s%s',p.path,temp.files(i_fi).name));
         % extract relevant data
