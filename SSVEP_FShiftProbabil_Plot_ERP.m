@@ -4,7 +4,7 @@ F.PathInEEG             = '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_
 
 
 F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:40,'UniformOutput',false)';
-F.Subs2use              = [1 3 4 5 6 7 9 10 11 13 15 18 20 21 22 23 24 25]; 
+F.Subs2use              = [1 3 4 5 6 7 9 10 11 13 15 18 20:31]; 
                         % 2 and 8 are excluded as the didn't do the task properly, sub 11 has potentially low number of trials
                         % for subject 12, 14: eeg and behavior data don't match
 
