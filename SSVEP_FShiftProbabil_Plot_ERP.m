@@ -567,3 +567,422 @@ for i_erp = 1:size(pl.erpparams,1)
     t.erpdata_cell = num2cell(t.erpdata);
     [out.data.(pl.erpparams{i_erp,1})] = deal(t.erpdata_cell{:});
 end
+
+%% plot some erp images across time [cue validity]
+% loop through conditions defined in contrasts
+pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
+    'trial_timing_type', {{'regular'}}; ...
+    'event_response_type', {{'hit'}}; ...
+%     'event_response_type', {{'hit','FA','error','miss'}}; ...
+    'cue_validity_label', {{'valid'};{'neutral'};{'invalid'}}};
+pl.sub2plot = 1:numel(F.Subs2use);
+
+pl.p_time = [25 25 -100 800]; % width step min max
+pl.posScale = 1.1;
+
+pl.pl.p_time_i = dsearchn(EP.time', pl.p_time(3:4)');
+
+pl.concols = num2cell([240 63 240; 100 63 100]'./255,1);
+pl.con_label = {'valid';'neutral';'invalid'};
+
+
+% preallocate data
+pl.dat2plot = nan([size(EP.electrodes,2), ...           % 1st dim channels
+    size(EP.time,2), ...                                % 2nd dim time
+    cellfun(@(x) size(x,1), pl.con_contrast(:,2))', ... % 3rd to n dim = levels defind in pl.con_contrast
+    numel(pl.sub2plot)]);                               % n+1 dim participants
+
+% extract data across contrasts
+% define how to loop through contrasts
+t.cont = cellfun(@(x) 1:size(x,1), pl.con_contrast(:,2), 'UniformOutput', false);
+t.contidx = combvec(t.cont{:});
+% loop across participants
+for i_sub = 1:numel(pl.sub2plot)
+    t.behavior = EP.behavior{pl.sub2plot(i_sub)};
+    t.epdata = EP.filtdata{pl.sub2plot(i_sub)}.data;
+
+    % loop through contrasts
+    for i_cont = 1:size(t.contidx,2)
+        % define evaluation syntax
+                
+        % preallocate logical idx for trials
+        t.idx = false(size(t.contidx,1),numel(t.behavior ));
+        for i_contstep = 1:size(t.contidx,1)
+            % index step
+            t.idx(i_contstep,:) = ...
+                any( ... % if it is more than one level, combine
+                cell2mat( ...
+                cellfun(@(x) strcmp({t.behavior.(pl.con_contrast{i_contstep,1})},x), ...
+                pl.con_contrast{i_contstep,2}{t.contidx(i_contstep,i_cont)}, 'UniformOutput', false)' ...
+                ) ...
+                ,1);
+        end
+        % combine all contrast conditions
+        t.idx_all = all(t.idx,1);
+        
+        % average across trials
+        t.text = sprintf("%1.0f,",t.contidx(:,i_cont));
+        t.evaltext = sprintf("pl.dat2plot(:,:,%si_sub) = mean(t.epdata(:,:,t.idx_all),3);",t.text);
+        eval(t.evaltext)
+    end
+end
+
+% squeeze data
+pl.dat2plot = squeeze(pl.dat2plot);
+
+% calcualte contrast differences
+t.contridx = nchoosek(1:size(pl.dat2plot,3),2);
+pl.typeidx = [ones(1,size(pl.dat2plot,3)) ones(1,size(t.contridx,1))+1];
+pl.dat2plot2 = pl.dat2plot;
+for i_contr = 1:size(t.contridx,1)
+    pl.dat2plot2(:,:,end+1,:) = pl.dat2plot(:,:,t.contridx(i_contr,1),:) - pl.dat2plot(:,:,t.contridx(i_contr,2),:);
+    pl.con_label{end+1} = sprintf('%s-%s',pl.con_label{t.contridx(i_contr,1)},pl.con_label{t.contridx(i_contr,2)});
+end
+
+% plot amplitudes of all values
+t.time=[];
+t.timedot=[];
+for i_st = 1:floor((pl.p_time(4)-pl.p_time(1)-pl.p_time(3))/pl.p_time(2))+1
+    t.time(i_st,:)=pl.p_time(3)+pl.p_time(2)*(i_st-1)+[0 pl.p_time(1)];
+    t.timedot(i_st,1:2)=dsearchn(EP.time',t.time(end,1:2)');
+end
+% t.t = get(0,'MonitorPositions');
+% t.row = round(sqrt((size(t.time,1)+2)/(1/(t.t(1,4)/t.t(1,3)))));
+% t.col = ceil(sqrt((size(t.time,1)+2)/(t.t(1,4)/t.t(1,3))));
+t.t = [1920 1080];
+t.col = ceil(sqrt((size(t.time,1)+2)/(1/(t.t(1)/t.t(2)))));
+t.row = ceil(sqrt((size(t.time,1)+2)/(t.t(1)/t.t(2))));
+% create plotdata
+
+plotdata=[];
+for i_pl = 1:size(t.time,1)
+    plotdata(:,:,i_pl)=squeeze(mean(pl.dat2plot2(:,t.timedot(i_pl,1):t.timedot(i_pl,2),:,:),[2,4]));
+end
+
+h.fig = []; h.sp = [];
+
+for i_fig = 1:size(plotdata,2)
+    h.fig(i_fig)=figure;
+    set(gcf,'Position',[100 100 800 700],'PaperPositionMode','auto')
+    if pl.typeidx(i_fig) == 1
+        t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==1,:)),[],'all');
+    elseif pl.typeidx(i_fig) == 2
+        t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==2,:)),[],'all');
+        % t.lims = [-1 1]*max(abs(plotdata(:,i_fig,:)),[],'all');
+    else
+        t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==2,:)),[],'all');
+        % t.lims = [-1 1]*max(abs(plotdata(:,i_fig,:)),[],'all');
+    end
+    for i_spl = 1:size(plotdata,3)
+        h.sp(i_spl)=subplot(t.row,t.col,i_spl);
+        if pl.typeidx(i_fig) == 1 || pl.typeidx(i_fig) == 2
+%             topoplot( plotdata(:,i_fig,i_spl), EP.electrodes(1:64), ...
+%                 'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
+%                 'electrodes','off','colormap',fake_parula,'whitebk','on');
+            topoplot( plotdata(:,i_fig,i_spl), EP.electrodes(1:64), ...
+                'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
+                'electrodes','off','colormap',flipud(cbrewer2('RdBu')),'whitebk','on');
+        else
+            topoplot( plotdata(:,i_fig,i_spl), EP.electrodes(1:64), ...
+                'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
+                'electrodes','off','colormap',flipud(cbrewer2('RdBu')),'whitebk','on');
+        end
+        title(sprintf('[%1.0f %1.0f]',t.time(i_spl,1),t.time(i_spl,2)),'FontSize',6)
+        t.pos = get(h.sp(i_spl),'Position');
+        set(h.sp(i_spl),'Position',[t.pos(1:2)-(t.pos(3:4).*((pl.posScale-1)/2)) t.pos(3:4).*pl.posScale])
+    end
+    h.sp(i_spl+1)=subplot(t.row,t.col,i_spl+2);
+    topoplot( [], EP.electrodes(1:64),  ...
+        'style','blank','whitebk','on');
+    title(sprintf('%s',pl.con_label{i_fig}),'FontSize',8)
+    t.pos = get(h.sp(i_spl+1),'Position');
+    set(h.sp(i_spl+1),'Position',[t.pos(1:2)-(t.pos(3:4).*((pl.posScale-1)/2)) t.pos(3:4).*pl.posScale])
+    
+    t.pos2 = get(h.sp(i_spl+1),'Position');
+    t.pos3 = get(h.sp(i_spl+1),'OuterPosition');
+    h.a1 = axes('position',[t.pos3(1) t.pos2(2) t.pos3(3) t.pos2(4)],'Visible','off');
+    if pl.typeidx(i_fig) == 1
+        colormap(gca, fake_parula)
+    else
+        colormap(gca,flipud(cbrewer2('RdBu')))
+    end
+    clim(t.lims);
+    h.c3 = colorbar();
+    t.pos4 = get(h.c3,'Position');
+    set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3)/2 t.pos4(4)*(2/3)])
+end
+axcopy(h.fig(i_fig))
+
+
+%% plot some erp images across time [hit or no hit]
+% loop through conditions defined in contrasts
+pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
+    'trial_timing_type', {{'regular'}}; ...
+    'evnt_type_label', {{'chroma+'}}; ...
+    'event_response_type', {{'hit'};{'FA','error','miss'}}};
+pl.sub2plot = 1:numel(F.Subs2use);
+
+pl.p_time = [25 25 -100 800]; % width step min max
+pl.posScale = 1.1;
+
+pl.pl.p_time_i = dsearchn(EP.time', pl.p_time(3:4)');
+
+pl.concols = num2cell([240 63 240; 100 63 100]'./255,1);
+pl.con_label = {'hit';'error+FA+miss'};
+
+
+% preallocate data
+pl.dat2plot = nan([size(EP.electrodes,2), ...           % 1st dim channels
+    size(EP.time,2), ...                                % 2nd dim time
+    cellfun(@(x) size(x,1), pl.con_contrast(:,2))', ... % 3rd to n dim = levels defind in pl.con_contrast
+    numel(pl.sub2plot)]);                               % n+1 dim participants
+
+% extract data across contrasts
+% define how to loop through contrasts
+t.cont = cellfun(@(x) 1:size(x,1), pl.con_contrast(:,2), 'UniformOutput', false);
+t.contidx = combvec(t.cont{:});
+% loop across participants
+for i_sub = 1:numel(pl.sub2plot)
+    t.behavior = EP.behavior{pl.sub2plot(i_sub)};
+    t.epdata = EP.filtdata{pl.sub2plot(i_sub)}.data;
+
+    % loop through contrasts
+    for i_cont = 1:size(t.contidx,2)
+        % define evaluation syntax
+                
+        % preallocate logical idx for trials
+        t.idx = false(size(t.contidx,1),numel(t.behavior ));
+        for i_contstep = 1:size(t.contidx,1)
+            % index step
+            t.idx(i_contstep,:) = ...
+                any( ... % if it is more than one level, combine
+                cell2mat( ...
+                cellfun(@(x) strcmp({t.behavior.(pl.con_contrast{i_contstep,1})},x), ...
+                pl.con_contrast{i_contstep,2}{t.contidx(i_contstep,i_cont)}, 'UniformOutput', false)' ...
+                ) ...
+                ,1);
+        end
+        % combine all contrast conditions
+        t.idx_all = all(t.idx,1);
+        
+        % average across trials
+        t.text = sprintf("%1.0f,",t.contidx(:,i_cont));
+        t.evaltext = sprintf("pl.dat2plot(:,:,%si_sub) = mean(t.epdata(:,:,t.idx_all),3);",t.text);
+        eval(t.evaltext)
+    end
+end
+
+% squeeze data
+pl.dat2plot = squeeze(pl.dat2plot);
+
+% calcualte contrast differences
+t.contridx = nchoosek(1:size(pl.dat2plot,3),2);
+pl.typeidx = [ones(1,size(pl.dat2plot,3)) ones(1,size(t.contridx,1))+1];
+pl.dat2plot2 = pl.dat2plot;
+for i_contr = 1:size(t.contridx,1)
+    pl.dat2plot2(:,:,end+1,:) = pl.dat2plot(:,:,t.contridx(i_contr,1),:) - pl.dat2plot(:,:,t.contridx(i_contr,2),:);
+    pl.con_label{end+1} = sprintf('%s-%s',pl.con_label{t.contridx(i_contr,1)},pl.con_label{t.contridx(i_contr,2)});
+end
+
+% plot amplitudes of all values
+t.time=[];
+t.timedot=[];
+for i_st = 1:floor((pl.p_time(4)-pl.p_time(1)-pl.p_time(3))/pl.p_time(2))+1
+    t.time(i_st,:)=pl.p_time(3)+pl.p_time(2)*(i_st-1)+[0 pl.p_time(1)];
+    t.timedot(i_st,1:2)=dsearchn(EP.time',t.time(end,1:2)');
+end
+% t.t = get(0,'MonitorPositions');
+% t.row = round(sqrt((size(t.time,1)+2)/(1/(t.t(1,4)/t.t(1,3)))));
+% t.col = ceil(sqrt((size(t.time,1)+2)/(t.t(1,4)/t.t(1,3))));
+t.t = [1920 1080];
+t.col = ceil(sqrt((size(t.time,1)+2)/(1/(t.t(1)/t.t(2)))));
+t.row = ceil(sqrt((size(t.time,1)+2)/(t.t(1)/t.t(2))));
+% create plotdata
+
+plotdata=[];
+for i_pl = 1:size(t.time,1)
+    plotdata(:,:,i_pl)=squeeze(mean(pl.dat2plot2(:,t.timedot(i_pl,1):t.timedot(i_pl,2),:,:),[2,4]));
+end
+
+h.fig = []; h.sp = [];
+
+for i_fig = 1:size(plotdata,2)
+    h.fig(i_fig)=figure;
+    set(gcf,'Position',[100 100 800 700],'PaperPositionMode','auto')
+    if pl.typeidx(i_fig) == 1
+        t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==1,:)),[],'all');
+    elseif pl.typeidx(i_fig) == 2
+        t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==2,:)),[],'all');
+        % t.lims = [-1 1]*max(abs(plotdata(:,i_fig,:)),[],'all');
+    end
+    for i_spl = 1:size(plotdata,3)
+        h.sp(i_spl)=subplot(t.row,t.col,i_spl);
+        
+        topoplot(plotdata(:,i_fig,i_spl), EP.electrodes(1:64), ...
+            'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
+            'electrodes','off','colormap',flipud(cbrewer2('RdBu')),'whitebk','on');
+       
+        title(sprintf('[%1.0f %1.0f]',t.time(i_spl,1),t.time(i_spl,2)),'FontSize',6)
+        t.pos = get(h.sp(i_spl),'Position');
+        set(h.sp(i_spl),'Position',[t.pos(1:2)-(t.pos(3:4).*((pl.posScale-1)/2)) t.pos(3:4).*pl.posScale])
+    end
+    h.sp(i_spl+1)=subplot(t.row,t.col,i_spl+2);
+    topoplot( [], EP.electrodes(1:64),  ...
+        'style','blank','whitebk','on');
+    title(sprintf('%s',pl.con_label{i_fig}),'FontSize',8)
+    t.pos = get(h.sp(i_spl+1),'Position');
+    set(h.sp(i_spl+1),'Position',[t.pos(1:2)-(t.pos(3:4).*((pl.posScale-1)/2)) t.pos(3:4).*pl.posScale])
+    
+    t.pos2 = get(h.sp(i_spl+1),'Position');
+    t.pos3 = get(h.sp(i_spl+1),'OuterPosition');
+    h.a1 = axes('position',[t.pos3(1) t.pos2(2) t.pos3(3) t.pos2(4)],'Visible','off');
+    colormap(gca,flipud(cbrewer2('RdBu')))
+        clim(t.lims);
+    h.c3 = colorbar();
+    t.pos4 = get(h.c3,'Position');
+    set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3)/2 t.pos4(4)*(2/3)])
+end
+axcopy(h.fig(i_fig))
+
+
+%% plot some erp images across time [chroma]
+% loop through conditions defined in contrasts
+pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
+    'trial_timing_type', {{'regular'}}; ...
+    'event_response_type', {{'hit'}}; ...
+%     'event_response_type', {{'hit','FA','error','miss'}}; ...
+    'evnt_type_label', {{'chroma+'};{'chroma-'}}};
+pl.sub2plot = 1:numel(F.Subs2use);
+
+pl.p_time = [25 25 -100 800]; % width step min max
+pl.posScale = 1.1;
+
+pl.pl.p_time_i = dsearchn(EP.time', pl.p_time(3:4)');
+
+pl.concols = num2cell([240 63 240; 100 63 100]'./255,1);
+pl.con_label = {'chroma+';'chroma-'};
+
+
+% preallocate data
+pl.dat2plot = nan([size(EP.electrodes,2), ...           % 1st dim channels
+    size(EP.time,2), ...                                % 2nd dim time
+    cellfun(@(x) size(x,1), pl.con_contrast(:,2))', ... % 3rd to n dim = levels defind in pl.con_contrast
+    numel(pl.sub2plot)]);                               % n+1 dim participants
+
+% extract data across contrasts
+% define how to loop through contrasts
+t.cont = cellfun(@(x) 1:size(x,1), pl.con_contrast(:,2), 'UniformOutput', false);
+t.contidx = combvec(t.cont{:});
+% loop across participants
+for i_sub = 1:numel(pl.sub2plot)
+    t.behavior = EP.behavior{pl.sub2plot(i_sub)};
+    t.epdata = EP.filtdata{pl.sub2plot(i_sub)}.data;
+
+    % loop through contrasts
+    for i_cont = 1:size(t.contidx,2)
+        % define evaluation syntax
+                
+        % preallocate logical idx for trials
+        t.idx = false(size(t.contidx,1),numel(t.behavior ));
+        for i_contstep = 1:size(t.contidx,1)
+            % index step
+            t.idx(i_contstep,:) = ...
+                any( ... % if it is more than one level, combine
+                cell2mat( ...
+                cellfun(@(x) strcmp({t.behavior.(pl.con_contrast{i_contstep,1})},x), ...
+                pl.con_contrast{i_contstep,2}{t.contidx(i_contstep,i_cont)}, 'UniformOutput', false)' ...
+                ) ...
+                ,1);
+        end
+        % combine all contrast conditions
+        t.idx_all = all(t.idx,1);
+        
+        % average across trials
+        t.text = sprintf("%1.0f,",t.contidx(:,i_cont));
+        t.evaltext = sprintf("pl.dat2plot(:,:,%si_sub) = mean(t.epdata(:,:,t.idx_all),3);",t.text);
+        eval(t.evaltext)
+    end
+end
+
+% squeeze data
+pl.dat2plot = squeeze(pl.dat2plot);
+
+% calcualte contrast differences
+t.contridx = nchoosek(1:size(pl.dat2plot,3),2);
+pl.typeidx = [ones(1,size(pl.dat2plot,3)) ones(1,size(t.contridx,1))+1];
+pl.dat2plot2 = pl.dat2plot;
+for i_contr = 1:size(t.contridx,1)
+    pl.dat2plot2(:,:,end+1,:) = pl.dat2plot(:,:,t.contridx(i_contr,1),:) - pl.dat2plot(:,:,t.contridx(i_contr,2),:);
+    pl.con_label{end+1} = sprintf('%s-%s',pl.con_label{t.contridx(i_contr,1)},pl.con_label{t.contridx(i_contr,2)});
+end
+
+% plot amplitudes of all values
+t.time=[];
+t.timedot=[];
+for i_st = 1:floor((pl.p_time(4)-pl.p_time(1)-pl.p_time(3))/pl.p_time(2))+1
+    t.time(i_st,:)=pl.p_time(3)+pl.p_time(2)*(i_st-1)+[0 pl.p_time(1)];
+    t.timedot(i_st,1:2)=dsearchn(EP.time',t.time(end,1:2)');
+end
+% t.t = get(0,'MonitorPositions');
+% t.row = round(sqrt((size(t.time,1)+2)/(1/(t.t(1,4)/t.t(1,3)))));
+% t.col = ceil(sqrt((size(t.time,1)+2)/(t.t(1,4)/t.t(1,3))));
+t.t = [1920 1080];
+t.col = ceil(sqrt((size(t.time,1)+2)/(1/(t.t(1)/t.t(2)))));
+t.row = ceil(sqrt((size(t.time,1)+2)/(t.t(1)/t.t(2))));
+% create plotdata
+
+plotdata=[];
+for i_pl = 1:size(t.time,1)
+    plotdata(:,:,i_pl)=squeeze(mean(pl.dat2plot2(:,t.timedot(i_pl,1):t.timedot(i_pl,2),:,:),[2,4]));
+end
+
+h.fig = []; h.sp = [];
+
+for i_fig = 1:size(plotdata,2)
+    h.fig(i_fig)=figure;
+    set(gcf,'Position',[100 100 800 700],'PaperPositionMode','auto')
+    if pl.typeidx(i_fig) == 1
+        t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==1,:)),[],'all');
+    elseif pl.typeidx(i_fig) == 2
+        t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==2,:)),[],'all');
+        % t.lims = [-1 1]*max(abs(plotdata(:,i_fig,:)),[],'all');
+    end
+    for i_spl = 1:size(plotdata,3)
+        h.sp(i_spl)=subplot(t.row,t.col,i_spl);
+        
+        topoplot(plotdata(:,i_fig,i_spl), EP.electrodes(1:64), ...
+            'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
+            'electrodes','off','colormap',flipud(cbrewer2('RdBu')),'whitebk','on');
+       
+        title(sprintf('[%1.0f %1.0f]',t.time(i_spl,1),t.time(i_spl,2)),'FontSize',6)
+        t.pos = get(h.sp(i_spl),'Position');
+        set(h.sp(i_spl),'Position',[t.pos(1:2)-(t.pos(3:4).*((pl.posScale-1)/2)) t.pos(3:4).*pl.posScale])
+    end
+    h.sp(i_spl+1)=subplot(t.row,t.col,i_spl+2);
+    topoplot( [], EP.electrodes(1:64),  ...
+        'style','blank','whitebk','on');
+    title(sprintf('%s',pl.con_label{i_fig}),'FontSize',8)
+    t.pos = get(h.sp(i_spl+1),'Position');
+    set(h.sp(i_spl+1),'Position',[t.pos(1:2)-(t.pos(3:4).*((pl.posScale-1)/2)) t.pos(3:4).*pl.posScale])
+    
+    t.pos2 = get(h.sp(i_spl+1),'Position');
+    t.pos3 = get(h.sp(i_spl+1),'OuterPosition');
+    h.a1 = axes('position',[t.pos3(1) t.pos2(2) t.pos3(3) t.pos2(4)],'Visible','off');
+    colormap(gca,flipud(cbrewer2('RdBu')))
+        clim(t.lims);
+    h.c3 = colorbar();
+    t.pos4 = get(h.c3,'Position');
+    set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3)/2 t.pos4(4)*(2/3)])
+end
+axcopy(h.fig(i_fig))
+
+
+
+
+
+
+
+
+
+
+
