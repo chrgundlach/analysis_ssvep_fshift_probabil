@@ -6,6 +6,7 @@ clearvars
 % general parameters
 F.PathIn            = 'E:\work\data\SSVEP_FShift_Probabil\eeg\SCADS\';
 F.PathIn            = 'N:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg\SCADS\';
+F.PathIn            = 'N:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg\SCADS_2stfa\';
 F.subjects          = cellfun(@(x) sprintf('%02.0f',x),num2cell(1:40),'UniformOutput', false)';
 % F.subs2use          = [9 10 11 12];%
 F.subs2use          = [1 3:6 7 9 10 11 12 13 14 15 18 20:31];

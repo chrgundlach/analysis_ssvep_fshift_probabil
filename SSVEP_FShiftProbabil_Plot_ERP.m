@@ -551,6 +551,7 @@ for i_sub = 1:numel(pl.sub2plot)
 end
 [out.data.participants] = deal(t.subs{:});
 
+
 % extract data
 for i_erp = 1:size(pl.erpparams,1)
     t.erpdata = [];
@@ -566,7 +567,22 @@ for i_erp = 1:size(pl.erpparams,1)
     % append values
     t.erpdata_cell = num2cell(t.erpdata);
     [out.data.(pl.erpparams{i_erp,1})] = deal(t.erpdata_cell{:});
+    % add electrode values
+    t.string = sprintf('%s_electrodes',pl.erpparams{i_erp,1});
+    [out.data.(t.string)] = deal(vararg2str(pl.erpparams{i_erp,3}));
 end
+
+t.path = 'C:\Users\psy05cvd\Dropbox\work\R-statistics\experiments\ssvep_fshiftprobabil\data';
+t.datestr = datestr(now,'mm-dd-yyyy_HH-MM');
+% t.filename = 'FFT_SSVEP_Amp_data_withoutBehav_sepRDK_peripheral_2elecs';
+t.filename = 'ERP_data';
+out.data_t = struct2table(out.data);
+% remove some data
+out.data_t = removevars(out.data_t,{'color_attended','eventRDK_color','event_color'});
+
+% write to textfile
+% writetable(out.data_t,fullfile(t.path,sprintf('%s.csv',t.filename)),'Delimiter',';')
+
 
 %% plot some erp images across time [cue validity]
 % loop through conditions defined in contrasts

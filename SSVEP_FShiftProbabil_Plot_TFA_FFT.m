@@ -2,6 +2,7 @@
 clearvars
 % F.PathInEEG             = 'D:\work\data\SSVEP_FShiftAlpha\eeg\TFA'; % with FWHM 1
 F.PathInEEG             = 'N:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg\tfa'; % with FWHM 1
+F.PathInEEG             = 'N:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg\tfa_2s'; % with FWHM 1 | preprocessing including 2s post cue
 % F.PathInEEG             = 'C:\Users\psy05cvd\Dropbox\work\projects\SSVEP_FShift_Probabil\EEG_data'; % with FWHM 1
 
 
@@ -482,6 +483,10 @@ for i_sub = 1:numel(pl.sub2plot)
     end
 end
 
+% normalize by across condition mean
+% pl.data_ind = bsxfun(@rdivide, pl.data_ind, mean(pl.data_ind(:,:,:,:),2));
+% pl.data_evo = bsxfun(@rdivide, pl.data_evo, mean(pl.data_evo(:,:,:,:),2));
+
 
 
 % into long format
@@ -507,7 +512,7 @@ pl.RDK.con3 = repmat(pl.con3label',size(pl.data_ind,1),prod(size(pl.data_ind,[3 
 pl.RDK.time = repmat(pl.timelabel',prod(size(pl.data_ind,[1 2])),prod(size(pl.data_ind,[4]))); pl.RDK.time = pl.RDK.time(:);
 
 % remove grand mean induced data
-pl.data_evo_bc = bsxfun(@minus, pl.data_evo_bc, mean(pl.data_ind_bc, [2,4]) );
+% pl.data_evo_bc = bsxfun(@minus, pl.data_evo_bc, mean(pl.data_ind_bc, [2,4]) );
 pl.RDK.data_evo_bc_l = pl.data_evo_bc(:);
 
 % plot 1
@@ -570,10 +575,11 @@ t.datestr = datestr(now,'mm-dd-yyyy_HH-MM');
 t.filename = 'FFT_SSVEP_largeclust';
 % t.filename = 'FFT_SSVEP_smallcentralclust';
 t.filename = 'FFT_SSVEP_smallcentralclust_fiveelecs';
+t.filename = 'FFT_SSVEP_smallcentralclust_fiveelecs_2spreprocess';
+% t.filename = 'FFT_SSVEP_NormAmps_smallcentralclust_fiveelecs'; % amplitudes normalized by across condition mean
+% t.filename = 'FFT_SSVEP_NormAmps_smallcentralclust_fiveelecs_2spreprocess'; % amplitudes normalized by across condition mean
 % write to textfile
 % writetable(R_Mat.all_t,fullfile(t.path,sprintf('%s.csv',t.filename)),'Delimiter',';')
-
-
 
 
 
@@ -591,7 +597,7 @@ pl.base = F.TFA.baseline;
 pl.base = [-250 0];
 pl.base = [-500 -250];
 pl.base_i = dsearchn( TFA.time', pl.base');
-pl.xlims=[-500 1750]; % index time 2 plot
+pl.xlims=[-500 2000]; % index time 2 plot
 pl.xlims_i = dsearchn(TFA.time', pl.xlims');
 
 pl.conlabel = {'cued';'uncued';'neutral';'irr_cue';'irr_neutr'};
