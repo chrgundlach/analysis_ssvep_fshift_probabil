@@ -596,7 +596,7 @@ out.data_t = removevars(out.data_t,{'color_attended','eventRDK_color','event_col
 pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
     'trial_timing_type', {{'regular'}}; ...
     'event_response_type', {{'hit'}}; ...
-    'evnt_type_label', {{'chroma+'}}; ...
+%     'evnt_type_label', {{'chroma+'}}; ...
 %     'event_response_type', {{'hit','FA','error','miss'}}; ...
     'cue_validity_label', {{'valid'};{'neutral'};{'invalid'}}};
 pl.sub2plot = 1:numel(F.Subs2use);
@@ -703,7 +703,7 @@ h.fig = []; h.sp = [];
 
 for i_fig = 1:size(plotdata,2)
     h.fig(i_fig)=figure;
-    set(gcf,'Position',[100 100 1200 700],'PaperPositionMode','auto')
+    set(gcf,'Position',[100 100 800 700],'PaperPositionMode','auto')
     if pl.typeidx(i_fig) == 1
         t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==1,:)),[],'all');
     elseif pl.typeidx(i_fig) == 2
@@ -757,7 +757,7 @@ for i_fig = 1:size(plotdata,2)
         clim(t.lims);
         h.c3 = colorbar();
         t.pos4 = get(h.c3,'Position');
-        set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3) t.pos4(4)*(2/3)])
+        set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3)/2 t.pos4(4)*(2/3)])
         t.yticks = get(h.c3,'YTick');
         set(h.c3,'YTick',pl.pcorrect(1:find(pl.pcorrect<t.lims(end),1,'last')), ...
             'YTickLabel',pl.plegend(1:find(pl.pcorrect<t.lims(end),1,'last')))
@@ -766,11 +766,11 @@ for i_fig = 1:size(plotdata,2)
         clim(t.lims);
         h.c3 = colorbar();
         t.pos4 = get(h.c3,'Position');
-        set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3) t.pos4(4)*(2/3)])
+        set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3)/2 t.pos4(4)*(2/3)])
     end
-    axcopy(h.fig(i_fig))
+    
 end
-
+axcopy(h.fig(i_fig))
 
 
 %% plot some erp images across time [hit or no hit]
@@ -788,9 +788,6 @@ pl.pl.p_time_i = dsearchn(EP.time', pl.p_time(3:4)');
 
 pl.concols = num2cell([240 63 240; 100 63 100]'./255,1);
 pl.con_label = {'hit';'error+FA+miss'};
-
-pl.plegend = {'1';'0.5';'0.25';'0.1';'0.05';'0.01';'0.001';'0.0001';'0.00001'};
-pl.pcorrect = [0 abs(log10([0.5 0.25 0.1 0.05 0.01 0.001 0.0001 0.00001]))];
 
 
 % preallocate data
@@ -839,13 +836,12 @@ pl.dat2plot = squeeze(pl.dat2plot);
 
 % calcualte contrast differences
 t.contridx = nchoosek(1:size(pl.dat2plot,3),2);
-pl.typeidx = [ones(1,size(pl.dat2plot,3)) ones(1,size(t.contridx,1))+1 ones(1,size(t.contridx,1))+2];
+pl.typeidx = [ones(1,size(pl.dat2plot,3)) ones(1,size(t.contridx,1))+1];
 pl.dat2plot2 = pl.dat2plot;
 for i_contr = 1:size(t.contridx,1)
     pl.dat2plot2(:,:,end+1,:) = pl.dat2plot(:,:,t.contridx(i_contr,1),:) - pl.dat2plot(:,:,t.contridx(i_contr,2),:);
     pl.con_label{end+1} = sprintf('%s-%s',pl.con_label{t.contridx(i_contr,1)},pl.con_label{t.contridx(i_contr,2)});
 end
-pl.con_label(pl.typeidx==3) = pl.con_label(pl.typeidx==2); % append for ttests
 
 % plot amplitudes of all values
 t.time=[];
@@ -867,17 +863,6 @@ for i_pl = 1:size(t.time,1)
     plotdata(:,:,i_pl)=squeeze(mean(pl.dat2plot2(:,t.timedot(i_pl,1):t.timedot(i_pl,2),:,:),[2,4]));
 end
 
-% add ttest data
-t.idx = size(pl.dat2plot2,3); % index where data should be appended
-t.idx2 = size(pl.dat2plot,3); % index where contrasts start
-for i_pl = 1:size(t.time,1)
-    for i_tt = 1:size(t.contridx,1)
-        t.data = squeeze(mean(pl.dat2plot2(:,t.timedot(i_pl,1):t.timedot(i_pl,2),t.idx2+i_tt,:),[2]));
-        [tt.h tt.p tt.ci tt.stats] = ttest(t.data,0,'Dim',2);
-        plotdata(:,t.idx+i_tt,i_pl) = tt.p;
-    end
-end
-
 h.fig = []; h.sp = [];
 
 for i_fig = 1:size(plotdata,2)
@@ -888,31 +873,13 @@ for i_fig = 1:size(plotdata,2)
     elseif pl.typeidx(i_fig) == 2
         t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==2,:)),[],'all');
         % t.lims = [-1 1]*max(abs(plotdata(:,i_fig,:)),[],'all');
-    elseif pl.typeidx(i_fig) == 3
-        % t.lims = [0 max(abs(log10(plotdata(:,pl.typeidx==3,:))),[],'all')];
-        t.lims = [0 max(abs(log10(plotdata(:,i_fig,:))),[],'all')];
-
-        % define colormaps
-        t.pcriterion = abs(log10(0.05));
-        if t.lims(2)<t.pcriterion
-            t.colormap = repmat(linspace(1,0.3,1000)',1,3);
-        else
-            t.border = ceil((t.pcriterion / t.lims(2))*1000);
-            % temp.colormap = [repmat([0.5 0.5 0.5],temp.border,1); [linspace(0,1,100-temp.border)' repmat(0,100-temp.border,1) linspace(1,0,100-temp.border)']];
-            t.colormap = [repmat(linspace(1,0.3,t.border)',1,3); [linspace(0,1,1000-t.border)' zeros(1000-t.border,1) linspace(1,0,1000-t.border)']];
-        end
     end
     for i_spl = 1:size(plotdata,3)
         h.sp(i_spl)=subplot(t.row,t.col,i_spl);
-        if pl.typeidx(i_fig) == 1 || pl.typeidx(i_fig) == 2
-            topoplot(plotdata(:,i_fig,i_spl), EP.electrodes(1:64), ...
-                'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
-                'electrodes','off','colormap',flipud(cbrewer2('RdBu')),'whitebk','on');
-        elseif pl.typeidx(i_fig) == 3
-            topoplot( abs(log10(plotdata(:,i_fig,i_spl))), EP.electrodes(1:64), ...
-                'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
-                'electrodes','off','colormap',t.colormap,'whitebk','on');
-        end
+        
+        topoplot(plotdata(:,i_fig,i_spl), EP.electrodes(1:64), ...
+            'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
+            'electrodes','off','colormap',flipud(cbrewer2('RdBu')),'whitebk','on');
        
         title(sprintf('[%1.0f %1.0f]',t.time(i_spl,1),t.time(i_spl,2)),'FontSize',6)
         t.pos = get(h.sp(i_spl),'Position');
@@ -928,24 +895,13 @@ for i_fig = 1:size(plotdata,2)
     t.pos2 = get(h.sp(i_spl+1),'Position');
     t.pos3 = get(h.sp(i_spl+1),'OuterPosition');
     h.a1 = axes('position',[t.pos3(1) t.pos2(2) t.pos3(3) t.pos2(4)],'Visible','off');
-    if pl.typeidx(i_fig) == 3
-        colormap(gca, t.colormap)
+    colormap(gca,flipud(cbrewer2('RdBu')))
         clim(t.lims);
-        h.c3 = colorbar();
-        t.pos4 = get(h.c3,'Position');
-        set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3) t.pos4(4)*(2/3)])
-        t.yticks = get(h.c3,'YTick');
-        set(h.c3,'YTick',pl.pcorrect(1:find(pl.pcorrect<t.lims(end),1,'last')), ...
-            'YTickLabel',pl.plegend(1:find(pl.pcorrect<t.lims(end),1,'last')))
-    else
-        colormap(gca,flipud(cbrewer2('RdBu')))
-        clim(t.lims);
-        h.c3 = colorbar();
-        t.pos4 = get(h.c3,'Position');
-        set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3) t.pos4(4)*(2/3)])
-    end
-    axcopy(h.fig(i_fig))
+    h.c3 = colorbar();
+    t.pos4 = get(h.c3,'Position');
+    set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3)/2 t.pos4(4)*(2/3)])
 end
+axcopy(h.fig(i_fig))
 
 
 %% plot some erp images across time [chroma]
@@ -965,9 +921,6 @@ pl.pl.p_time_i = dsearchn(EP.time', pl.p_time(3:4)');
 pl.concols = num2cell([240 63 240; 100 63 100]'./255,1);
 pl.con_label = {'chroma+';'chroma-'};
 
-pl.plegend = {'1';'0.5';'0.25';'0.1';'0.05';'0.01';'0.001';'0.0001';'0.00001'};
-pl.pcorrect = [0 abs(log10([0.5 0.25 0.1 0.05 0.01 0.001 0.0001 0.00001]))];
-
 
 % preallocate data
 pl.dat2plot = nan([size(EP.electrodes,2), ...           % 1st dim channels
@@ -1015,13 +968,12 @@ pl.dat2plot = squeeze(pl.dat2plot);
 
 % calcualte contrast differences
 t.contridx = nchoosek(1:size(pl.dat2plot,3),2);
-pl.typeidx = [ones(1,size(pl.dat2plot,3)) ones(1,size(t.contridx,1))+1 ones(1,size(t.contridx,1))+2];
+pl.typeidx = [ones(1,size(pl.dat2plot,3)) ones(1,size(t.contridx,1))+1];
 pl.dat2plot2 = pl.dat2plot;
 for i_contr = 1:size(t.contridx,1)
     pl.dat2plot2(:,:,end+1,:) = pl.dat2plot(:,:,t.contridx(i_contr,1),:) - pl.dat2plot(:,:,t.contridx(i_contr,2),:);
     pl.con_label{end+1} = sprintf('%s-%s',pl.con_label{t.contridx(i_contr,1)},pl.con_label{t.contridx(i_contr,2)});
 end
-pl.con_label(pl.typeidx==3) = pl.con_label(pl.typeidx==2); % append for ttests
 
 % plot amplitudes of all values
 t.time=[];
@@ -1043,18 +995,6 @@ for i_pl = 1:size(t.time,1)
     plotdata(:,:,i_pl)=squeeze(mean(pl.dat2plot2(:,t.timedot(i_pl,1):t.timedot(i_pl,2),:,:),[2,4]));
 end
 
-% add ttest data
-t.idx = size(pl.dat2plot2,3); % index where data should be appended
-t.idx2 = size(pl.dat2plot,3); % index where contrasts start
-for i_pl = 1:size(t.time,1)
-    for i_tt = 1:size(t.contridx,1)
-        t.data = squeeze(mean(pl.dat2plot2(:,t.timedot(i_pl,1):t.timedot(i_pl,2),t.idx2+i_tt,:),[2]));
-        [tt.h tt.p tt.ci tt.stats] = ttest(t.data,0,'Dim',2);
-        plotdata(:,t.idx+i_tt,i_pl) = tt.p;
-    end
-end
-
-
 h.fig = []; h.sp = [];
 
 for i_fig = 1:size(plotdata,2)
@@ -1065,31 +1005,13 @@ for i_fig = 1:size(plotdata,2)
     elseif pl.typeidx(i_fig) == 2
         t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==2,:)),[],'all');
         % t.lims = [-1 1]*max(abs(plotdata(:,i_fig,:)),[],'all');
-    elseif pl.typeidx(i_fig) == 3
-        % t.lims = [0 max(abs(log10(plotdata(:,pl.typeidx==3,:))),[],'all')];
-        t.lims = [0 max(abs(log10(plotdata(:,i_fig,:))),[],'all')];
-
-        % define colormaps
-        t.pcriterion = abs(log10(0.05));
-        if t.lims(2)<t.pcriterion
-            t.colormap = repmat(linspace(1,0.3,1000)',1,3);
-        else
-            t.border = ceil((t.pcriterion / t.lims(2))*1000);
-            % temp.colormap = [repmat([0.5 0.5 0.5],temp.border,1); [linspace(0,1,100-temp.border)' repmat(0,100-temp.border,1) linspace(1,0,100-temp.border)']];
-            t.colormap = [repmat(linspace(1,0.3,t.border)',1,3); [linspace(0,1,1000-t.border)' zeros(1000-t.border,1) linspace(1,0,1000-t.border)']];
-        end
     end
     for i_spl = 1:size(plotdata,3)
         h.sp(i_spl)=subplot(t.row,t.col,i_spl);
-        if pl.typeidx(i_fig) == 1 || pl.typeidx(i_fig) == 2
-            topoplot(plotdata(:,i_fig,i_spl), EP.electrodes(1:64), ...
-                'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
-                'electrodes','off','colormap',flipud(cbrewer2('RdBu')),'whitebk','on');
-        elseif pl.typeidx(i_fig) == 3
-            topoplot( abs(log10(plotdata(:,i_fig,i_spl))), EP.electrodes(1:64), ...
-                'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
-                'electrodes','off','colormap',t.colormap,'whitebk','on');
-        end
+        
+        topoplot(plotdata(:,i_fig,i_spl), EP.electrodes(1:64), ...
+            'shading', 'flat', 'numcontour', 0, 'conv','on','maplimits',t.lims, ...
+            'electrodes','off','colormap',flipud(cbrewer2('RdBu')),'whitebk','on');
        
         title(sprintf('[%1.0f %1.0f]',t.time(i_spl,1),t.time(i_spl,2)),'FontSize',6)
         t.pos = get(h.sp(i_spl),'Position');
@@ -1105,25 +1027,13 @@ for i_fig = 1:size(plotdata,2)
     t.pos2 = get(h.sp(i_spl+1),'Position');
     t.pos3 = get(h.sp(i_spl+1),'OuterPosition');
     h.a1 = axes('position',[t.pos3(1) t.pos2(2) t.pos3(3) t.pos2(4)],'Visible','off');
-    if pl.typeidx(i_fig) == 3
-        colormap(gca, t.colormap)
+    colormap(gca,flipud(cbrewer2('RdBu')))
         clim(t.lims);
-        h.c3 = colorbar();
-        t.pos4 = get(h.c3,'Position');
-        set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3) t.pos4(4)*(2/3)])
-        t.yticks = get(h.c3,'YTick');
-        set(h.c3,'YTick',pl.pcorrect(1:find(pl.pcorrect<t.lims(end),1,'last')), ...
-            'YTickLabel',pl.plegend(1:find(pl.pcorrect<t.lims(end),1,'last')))
-    else
-        colormap(gca,flipud(cbrewer2('RdBu')))
-        clim(t.lims);
-        h.c3 = colorbar();
-        t.pos4 = get(h.c3,'Position');
-        set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3) t.pos4(4)*(2/3)])
-    end
-    axcopy(h.fig(i_fig))
+    h.c3 = colorbar();
+    t.pos4 = get(h.c3,'Position');
+    set(h.c3,'Position',[t.pos4(1)+0.065 t.pos4(2)+(t.pos4(4)*(1/6)) t.pos4(3)/2 t.pos4(4)*(2/3)])
 end
-
+axcopy(h.fig(i_fig))
 
 
 
