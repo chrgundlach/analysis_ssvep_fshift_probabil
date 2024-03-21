@@ -10,8 +10,8 @@ F.PathInBehavior        = fullfile(F.Pathlocal, 'behavior\raw\');
 F.PathInSCADS           = fullfile(F.Pathlocal, 'eeg\SCADS_2stfa\');
 F.PathOut               = fullfile(F.Pathlocal, 'eeg\tfa_2s\'); % with FWHM 0.5
 F.subjects              = arrayfun(@(x) sprintf('%02.0f',x),1:50,'UniformOutput',false)';
-F.sub2use               = [1 3 4 5 6 7 9 10 11 12 13 14 15 18 20:31];%:53;
-F.sub2use               = [31];%:53;
+% F.sub2use               = [1 3 4 5 6 7 9 10 11 12 13 14 15 18 20:36];%:53;
+F.sub2use               = [35:36];%:53;
 
 F.trigger               = {[10] [20] [30] [40] [50] [60]}; % regular
 % F.trigger               = {[100];[200]};
@@ -184,39 +184,39 @@ for i_sub = 1:numel(F.sub2use)
     end
     
     
-    %     plotting for checking
-%     pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'};
-    pl.elec2plot = {'Oz'};
-    pl.elec2plot = {'POz';'O1';'Oz';'O2';'Iz'};
-    pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) strcmp({TFA.electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
-    
-    pl.data = mean(TFA.FFT.data_ind(:,pl.elec2plot_i,:,:),2); pl.ylims = [0 max(pl.data(:))];
-    pl.data = mean(TFA.FFT.data_evo(:,pl.elec2plot_i,:,:),2); pl.ylims = [0 max(pl.data(:))];
-    figure;
-    for i_con = 1:size(pl.data,3)
-        subplot(size(pl.data,3),1,i_con)
-        plot(TFA.FFT.freqs,squeeze(pl.data(:,:,i_con,:)))
-        xlabel('frequency in Hz')
-        ylabel('amplitude in \muV')
-        xlim([0 50])
-        ylim(pl.ylims)
-        title(sprintf('%s | RDKs [1 2 3]: [%1.0f %1.0f %1.0f Hz]',F.conds{i_con},TFA.RDK.RDK.freq))
-        legend(cellfun(@(x) num2str(x),TFA.FFT.timewin,'UniformOutput',false))
-        set(gca,'FontSize',8)
-    end
-    figure;
-    for i_time = 1:size(pl.data,4)
-        subplot(size(pl.data,4),1,i_time)
-        plot(TFA.FFT.freqs,squeeze(pl.data(:,:,:,i_time)))
-        xlabel('frequency in Hz')
-        ylabel('amplitude in \muV')
-        xlim([0 50])
-        ylim(pl.ylims)
-        legend(F.conds)
-        title(sprintf('time [%1.0f %1.0f]s | RDKs [1 2 3]: [%1.0f %1.0f %1.0f Hz]',TFA.FFT.timewin{i_time}, TFA.RDK.RDK.freq))
-        set(gca,'FontSize',8)
-    end
-    
+%     %     plotting for checking
+% %     pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'};
+%     pl.elec2plot = {'Oz'};
+%     pl.elec2plot = {'POz';'O1';'Oz';'O2';'Iz'};
+%     pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) strcmp({TFA.electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
+%     
+%     pl.data = mean(TFA.FFT.data_ind(:,pl.elec2plot_i,:,:),2); pl.ylims = [0 max(pl.data(:))];
+%     pl.data = mean(TFA.FFT.data_evo(:,pl.elec2plot_i,:,:),2); pl.ylims = [0 max(pl.data(:))];
+%     figure;
+%     for i_con = 1:size(pl.data,3)
+%         subplot(size(pl.data,3),1,i_con)
+%         plot(TFA.FFT.freqs,squeeze(pl.data(:,:,i_con,:)))
+%         xlabel('frequency in Hz')
+%         ylabel('amplitude in \muV')
+%         xlim([0 50])
+%         ylim(pl.ylims)
+%         title(sprintf('%s | RDKs [1 2 3]: [%1.0f %1.0f %1.0f Hz]',F.conds{i_con},TFA.RDK.RDK.freq))
+%         legend(cellfun(@(x) num2str(x),TFA.FFT.timewin,'UniformOutput',false))
+%         set(gca,'FontSize',8)
+%     end
+%     figure;
+%     for i_time = 1:size(pl.data,4)
+%         subplot(size(pl.data,4),1,i_time)
+%         plot(TFA.FFT.freqs,squeeze(pl.data(:,:,:,i_time)))
+%         xlabel('frequency in Hz')
+%         ylabel('amplitude in \muV')
+%         xlim([0 50])
+%         ylim(pl.ylims)
+%         legend(F.conds)
+%         title(sprintf('time [%1.0f %1.0f]s | RDKs [1 2 3]: [%1.0f %1.0f %1.0f Hz]',TFA.FFT.timewin{i_time}, TFA.RDK.RDK.freq))
+%         set(gca,'FontSize',8)
+%     end
+%     
     %% save
     TFA.savetime=datestr(now);
     if ~exist(F.PathOut); mkdir(F.PathOut); end
