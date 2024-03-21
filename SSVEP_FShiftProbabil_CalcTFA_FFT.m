@@ -11,7 +11,7 @@ F.PathInSCADS           = fullfile(F.Pathlocal, 'eeg\SCADS_2stfa\');
 F.PathOut               = fullfile(F.Pathlocal, 'eeg\tfa_2s\'); % with FWHM 0.5
 F.subjects              = arrayfun(@(x) sprintf('%02.0f',x),1:50,'UniformOutput',false)';
 F.sub2use               = [1 3 4 5 6 7 9 10 11 12 13 14 15 18 20:31];%:53;
-F.sub2use               = [31];%:53;
+F.sub2use               = [33 34];%:53;
 
 F.trigger               = {[10] [20] [30] [40] [50] [60]}; % regular
 % F.trigger               = {[100];[200]};
@@ -56,8 +56,8 @@ for i_sub = 1:numel(F.sub2use)
     %% do csd transform
     if F.CSD_flag==1
         if  i_sub == 1 % calculate CSD matrix
-%             CSD.chanmat=ExtractMontage('C:\Users\psy05cvd\Dropbox\work\matlab\software\toolboxes\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
-            CSD.chanmat=ExtractMontage('C:\Users\EEG\Documents\MATLAB\christopher\general_functions\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
+            CSD.chanmat=ExtractMontage('C:\Users\psy05cvd\Dropbox\work\matlab\software\toolboxes\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
+%             CSD.chanmat=ExtractMontage('C:\Users\EEG\Documents\MATLAB\christopher\general_functions\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
             [CSD.G,CSD.H] = GetGH(CSD.chanmat);
         end
         fprintf(1,'\n###\ncalculating CSD transform\n###\n')

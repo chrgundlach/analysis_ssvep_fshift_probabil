@@ -4,7 +4,7 @@ F.PathInEEG             = '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_
 
 
 F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:40,'UniformOutput',false)';
-F.Subs2use              = [1 3 4 5 6 7 9 10 11 13 15 18 20:28 30:31]; 
+F.Subs2use              = [1 3 4 5 6 7 9 10 11 13 15 18 20:28 30:34]; 
                         % 2 and 8 are excluded as the didn't do the task properly, sub 11 has potentially low number of trials
                         % for subject 12, 14, 39: eeg and behavior data don't match
 
@@ -51,7 +51,7 @@ pl.pcorrect = [0 abs(log10([0.5 0.25 0.1 0.05 0.01 0.001 0.0001 0.00001]))];
 
 
 %% plot ERPs exploratively in topo array
-
+    
 % loop through conditions defined in contrasts
 pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
     'trial_timing_type', {{'regular'}}; ...
@@ -114,6 +114,7 @@ plot_data_topoarray(EP.electrodes, pl.dat2plot_rs,'ERP','times',EP.time,'conds',
 pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
     'trial_timing_type', {{'regular'}}; ...
     'event_response_type', {{'hit'}}; ...
+%     'evnt_type_label', {{'chroma+'}}; ...
 %     'event_response_type', {{'hit','FA','error','miss'}}; ...
     'cue_validity_label', {{'valid'};{'neutral'};{'invalid'}}};
 pl.sub2plot = 1:numel(F.Subs2use);
@@ -124,6 +125,7 @@ pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 componen
 % pl.elec2plot = {'P6';'P8';'PO8';'P10';'P5';'P7';'PO7';'P9'}; % for N2 component lateral
 % pl.elec2plot = {'POz'}; % early N2 SN?
 % pl.elec2plot = {'CPz';'Cz'}; % early N2 SN?
+pl.elec2plot = {'FCz';'Fz'}; % early frontal?
 
 pl.con_label = {'valid';'neutral';'invalid'};
 
@@ -224,7 +226,7 @@ set(gcf, 'Color', [1 1 1]);
 % loop through conditions defined in contrasts
 pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
     'trial_timing_type', {{'regular'}}; ...
-    'evnt_type_label', {{'chroma+'}};
+    'evnt_type_label', {{'chroma+'}}; ...
     'event_response_type', {{'hit'};{'FA','error','miss'}}};
 pl.sub2plot = 1:numel(F.Subs2use);
 % pl.elec2plot = {'P8';'PO8';'P10';'P7';'PO7';'P9'}; % for P1 component lateral !
@@ -235,6 +237,8 @@ pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 componen
 
 % pl.elec2plot = {'POz'}; % early N2 SN?
 % pl.elec2plot = {'CPz';'Cz'}; % early N2 SN?
+pl.elec2plot = {'FCz';'Fz'}; % early frontal?
+
 
 pl.elec2plot_i = ...
     any(cell2mat(cellfun(@(x) strcmp({EP.electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1);
@@ -345,6 +349,8 @@ pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 componen
 
 % pl.elec2plot = {'POz'}; % early N2 SN?
 % pl.elec2plot = {'CPz';'Cz'}; % early N2 SN?
+pl.elec2plot = {'FCz';'Fz'}; % early frontal?
+
 
 pl.elec2plot_i = ...
     any(cell2mat(cellfun(@(x) strcmp({EP.electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1);
@@ -452,9 +458,9 @@ pl.sub2plot = 1:numel(F.Subs2use);
 pl.time2plot = [160 190]; % time in ms
 pl.time2plot = [160 250]; % time in ms
 pl.time2plot = [100 150]; % time in ms
-pl.time2plot = [100 190]; % time in ms
+
+% pl.time2plot = [100 190]; % time in ms
 pl.time2plot = [250 350]; % time in ms
-% pl.time2plot = [400 500]; % time in ms
 % pl.time2plot = [400 550]; % time in ms
 pl.time2plot_i = dsearchn(EP.time', pl.time2plot');
 
@@ -536,8 +542,8 @@ colorbar
 %% export single trial erp data for R analysis
 pl.sub2plot = 1:numel(F.Subs2use);
 pl.erpparams = { ...
-    'PD130', [100 180], {'P8';'PO8';'P10';'P7';'PO7';'P9'}; ...
-    'N2', [250 350], {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10'}; ...
+    'PD130', [100 190], {'P8';'PO8';'P10';'P7';'PO7';'P9'}; ...
+    'N2', [250 330], {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10'}; ...
     'P300', [400 550], {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'} ...
     };
 
@@ -596,7 +602,7 @@ out.data_t = removevars(out.data_t,{'color_attended','eventRDK_color','event_col
 pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
     'trial_timing_type', {{'regular'}}; ...
     'event_response_type', {{'hit'}}; ...
-    'evnt_type_label', {{'chroma+'}}; ...
+%     'evnt_type_label', {{'chroma+'}}; ...
 %     'event_response_type', {{'hit','FA','error','miss'}}; ...
     'cue_validity_label', {{'valid'};{'neutral'};{'invalid'}}};
 pl.sub2plot = 1:numel(F.Subs2use);
@@ -882,7 +888,7 @@ h.fig = []; h.sp = [];
 
 for i_fig = 1:size(plotdata,2)
     h.fig(i_fig)=figure;
-    set(gcf,'Position',[100 100 800 700],'PaperPositionMode','auto')
+    set(gcf,'Position',[100 100 1200 700],'PaperPositionMode','auto')
     if pl.typeidx(i_fig) == 1
         t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==1,:)),[],'all');
     elseif pl.typeidx(i_fig) == 2
@@ -1059,7 +1065,7 @@ h.fig = []; h.sp = [];
 
 for i_fig = 1:size(plotdata,2)
     h.fig(i_fig)=figure;
-    set(gcf,'Position',[100 100 800 700],'PaperPositionMode','auto')
+    set(gcf,'Position',[100 100 1200 700],'PaperPositionMode','auto')
     if pl.typeidx(i_fig) == 1
         t.lims = [-1 1]*max(abs(plotdata(:,pl.typeidx==1,:)),[],'all');
     elseif pl.typeidx(i_fig) == 2
