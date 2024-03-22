@@ -7,7 +7,7 @@ F.PathInEEG             = 'N:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg
 
 
 F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:40,'UniformOutput',false)';
-F.Subs2use              = [1 3 4 5 6 7 9 10 11 12 13 14 15 18 20:34]; 
+F.Subs2use              = [1 3 4 5 6 7 9 10 11 12 13 14 15 18 20:36]; 
                         % 2 and 8 are excluded as the didn't do the task properly, sub 11 has potentially low number of trials
 F.TFA.baseline          = [-500 -250];
 

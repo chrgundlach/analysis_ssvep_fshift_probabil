@@ -9,7 +9,7 @@ F.PathIn            = 'N:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg\SCA
 F.PathIn            = 'N:\AllgPsy\experimental_data\2023_FShift_Probabil\eeg\SCADS_2stfa\';
 F.subjects          = cellfun(@(x) sprintf('%02.0f',x),num2cell(1:40),'UniformOutput', false)';
 % F.subs2use          = [9 10 11 12];%
-F.subs2use          = [1 3:6 7 9 10 11 12 13 14 15 18 20:31];
+F.subs2use          = [1 3:6 7 9 10 11 12 13 14 15 18 20:36];
 F.con2an            = {[10] [20] [30] [40] [50] [60]};
 F.con2an_label      = {'valid | target RDK1'; 'valid | target RDK2'; ...
     'invalid | target RDK2'; 'invalid | target RDK2';...

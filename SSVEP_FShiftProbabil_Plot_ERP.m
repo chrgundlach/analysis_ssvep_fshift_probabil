@@ -118,14 +118,14 @@ pl.con_contrast = {... % contrasts by 1st dim; averaged across second dim
 %     'event_response_type', {{'hit','FA','error','miss'}}; ...
     'cue_validity_label', {{'valid'};{'neutral'};{'invalid'}}};
 pl.sub2plot = 1:numel(F.Subs2use);
-% pl.elec2plot = {'P8';'PO8';'P10';'P7';'PO7';'P9'}; % for P1 component lateral !
+pl.elec2plot = {'P8';'PO8';'P10';'P7';'PO7';'P9'}; % for P1 component lateral !
 % pl.elec2plot = {'P7';'PO7';'P9';'O1';'I1';'Oz'; 'Iz';'O2';'I2';'P8';'PO8';'P10';}; % for N2 component posterior!
-pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal!
+% pl.elec2plot = {'P3';'P1';'Pz';'P4';'P2';'POz';'PO3';'PO4'}; % for P300 component centro-parietal!
 % pl.elec2plot = {'POz';'Oz';'O1';'O2';'Iz'}; % for N1 component centro-parietal
 % pl.elec2plot = {'P6';'P8';'PO8';'P10';'P5';'P7';'PO7';'P9'}; % for N2 component lateral
 % pl.elec2plot = {'POz'}; % early N2 SN?
 % pl.elec2plot = {'CPz';'Cz'}; % early N2 SN?
-pl.elec2plot = {'FCz';'Fz'}; % early frontal?
+% pl.elec2plot = {'FCz';'Fz'}; % early frontal?
 
 pl.con_label = {'valid';'neutral';'invalid'};
 
